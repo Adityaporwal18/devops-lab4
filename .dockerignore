@@ -1,0 +1,7 @@
+.git
+.venv
+.jenkins-venv
+docs
+__pycache__
+.pytest_cache
+disaster-recovery/backups

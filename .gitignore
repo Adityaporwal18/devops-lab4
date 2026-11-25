@@ -1,0 +1,8 @@
+.venv/
+.jenkins-venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+.DS_Store
+disaster-recovery/backups/
