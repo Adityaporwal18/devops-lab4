@@ -15,17 +15,17 @@
 
 ## Lab questions and results
 
-Question numbers follow the assignment portal. Each question also has a PDF with its report section, screenshots and commands.
+Question numbers follow the course's lab list. Each question also has a PDF with its report section, screenshots and commands. The upload page may list the questions in a different order; each PDF shows the full question text at the top.
 
 | Question | Topic | Result | PDF |
 |---|---|---|---|
-| Q1 | Disaster recovery and failover | Restore in 379 ms with matching checksum; failover outage 7.3 s | [Q1](docs/submission/Lab4_Q1_Disaster_Recovery.pdf) |
-| Q2 | Automated testing and deployment gates | Pass, deliberate fail (gate blocked), pass | [Q2](docs/submission/Lab4_Q2_Automated_Testing_Gates.pdf) |
-| Q3 | Blue-Green deployment | Switch and rollback under load, 0 failed requests | [Q3](docs/submission/Lab4_Q3_Blue_Green_Deployment.pdf) |
+| Q1 | Automated testing and deployment gates | Pass, deliberate fail (gate blocked), pass | [Q1](docs/submission/Lab4_Q1_Automated_Testing_Gates.pdf) |
+| Q2 | Blue-Green deployment | Switch and rollback under load, 0 failed requests | [Q2](docs/submission/Lab4_Q2_Blue_Green_Deployment.pdf) |
+| Q3 | Canary deployment, metrics and rollback triggers | 90/10 and 70/30 measured; a faulty release breached the error trigger and was rolled back automatically | [Q3](docs/submission/Lab4_Q3_Canary_Deployment.pdf) |
 | Q4 | GitOps using Argo CD | Git change synced automatically; manual drift self-healed in 9 s | [Q4](docs/submission/Lab4_Q4_GitOps_ArgoCD.pdf) |
-| Q5 | Advanced deployment strategies report | Comparison, risk analysis and conclusions: [REPORT.md](REPORT.md) | [Q5](docs/submission/Lab4_Q5_Deployment_Strategies_Report.pdf) |
-| Q6 | Secure secret management | Jenkins credential masked in the log; Kubernetes Secret injected into a Pod | [Q6](docs/submission/Lab4_Q6_Secret_Management.pdf) |
-| Q7 | Canary deployment, metrics and rollback triggers | 90/10 and 70/30 measured; a faulty release breached the error trigger and was rolled back automatically | [Q7](docs/submission/Lab4_Q7_Canary_Deployment.pdf) |
+| Q5 | Secure secret management | Jenkins credential masked in the log; Kubernetes Secret injected into a Pod | [Q5](docs/submission/Lab4_Q5_Secret_Management.pdf) |
+| Q6 | Disaster recovery and failover | Restore in 379 ms with matching checksum; failover outage 7.3 s | [Q6](docs/submission/Lab4_Q6_Disaster_Recovery.pdf) |
+| Q7 | Advanced deployment strategies report | Comparison, risk analysis and conclusions: [REPORT.md](REPORT.md) | [Q7](docs/submission/Lab4_Q7_Deployment_Strategies_Report.pdf) |
 
 ![A failing test blocks the deployment gate](docs/evidence/screenshots/08-jenkins-build-2-gate-blocked.png)
 

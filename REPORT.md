@@ -8,7 +8,7 @@
 
 [Repository overview](README.md) | [Evidence gallery](docs/EVIDENCE.md) | [Commands executed](commands.txt)
 
-Question numbers follow the assignment portal. Q5, the comparison report, is placed after Q7 because it builds on the results of the other questions.
+Question numbers follow the course's lab list for Lab 4.
 
 ## 1. Objective
 
@@ -30,53 +30,7 @@ To implement and evaluate advanced DevOps practices: a disaster recovery mechani
 
 [app.py](app.py) is a small Flask application. `/` returns JSON with the application name, a `version` taken from the `APP_VERSION` environment variable and a status; `/health` returns `{"status":"healthy"}`. The same image is started twice with different `APP_VERSION` values: **Blue = v1** and **Green = v2**. For the canary trigger test the application has a fault switch: with `SIMULATE_FAILURE=true` the page returns HTTP 500. The switch is off by default.
 
-## Q1 - Disaster recovery and failover
-
-**Design.**
-
-| Part | Mechanism | Files |
-|---|---|---|
-| Backup | The data file on a Kubernetes persistent volume is copied out with `kubectl cp` and its SHA-256 checksum is recorded | [disaster-recovery/pvc.yaml](disaster-recovery/pvc.yaml), [disaster-recovery/pod.yaml](disaster-recovery/pod.yaml) |
-| Restore | [scripts/restore-data.sh](scripts/restore-data.sh) copies the backup back, times the restore in milliseconds and compares checksums | |
-| Failover | A second environment (Green) runs next to the live one (Blue). If Blue fails, nginx is switched to Green by [scripts/failover-test.sh](scripts/failover-test.sh) | [bluegreen/compose.yaml](bluegreen/compose.yaml) |
-
-**Recovery objectives.** The targets in [disaster-recovery/TARGETS.md](disaster-recovery/TARGETS.md) were committed before the tests were run.
-
-| Objective | Target | Measured | Met |
-|---|---|---|---|
-| RTO - data restore | 30 s | 379 ms | Yes |
-| RPO - data | No loss of data written before the latest backup | Restored file has the same SHA-256 as the backup | Yes |
-| RTO - service failover | 60 s | 7.3 s of failed requests | Yes |
-
-RTO (Recovery Time Objective) is the longest acceptable time to restore service. RPO (Recovery Point Objective) is the largest acceptable data loss, expressed as time since the last good backup.
-
-**Backup and restore.** A test record was written to the volume and backed up; original and backup had the same checksum. The file was then deleted (`No such file or directory`) and restored by the script in 379 ms with a matching checksum. The record also survived deleting and recreating the Pod, because the data lives on the persistent volume.
-
-![Delete and timed restore](docs/evidence/screenshots/51-dr-delete-and-timed-restore.png)
-
-**Failover.** The test starts a request stream (one request every 0.25 s), kills Blue, waits 5 seconds as a simulated detection time and switches nginx to Green.
-
-| Time | Event |
-|---|---|
-| 14:47:34.6 | Blue is killed |
-| 14:47:35.1 | First failed request (HTTP 502), followed by three HTTP 504 |
-| 14:47:40.5 | Traffic is switched to Green |
-| 14:47:42.4 | First good request again (`v2`) |
-
-Of 90 requests, 12 returned `v1`, 4 failed and 74 returned `v2`. The measured outage is **7335 ms**. Blue was then started again and kept as the standby.
-
-![Failover test](docs/evidence/screenshots/54-failover-test-run.png)
-
-**Observations and limits.**
-
-- The outage is about two seconds longer than the detection time, because requests already sent to the dead container had to time out.
-- The failover is started by a script, not by automatic health checks, and the 5-second detection time is an assumption. A person noticing the failure would take longer.
-- The RPO result holds because the backup was taken right after the data was written. With scheduled backups the RPO equals the backup interval.
-- The backup is stored on the same machine as the cluster. That protects against deleted data, not against losing the machine.
-
-Evidence: [Q1 in the gallery](docs/EVIDENCE.md#q1---disaster-recovery-and-failover)
-
-## Q2 - Automated testing and deployment gates
+## Q1 - Automated testing and deployment gates
 
 **Pipeline.** The [Jenkinsfile](Jenkinsfile) runs Checkout, Install Dependencies, Unit Tests (3 tests), Integration Tests (3 tests) and a Deployment Gate. A declarative pipeline stops at the first failed stage, so the gate only runs when both test stages pass.
 
@@ -94,9 +48,9 @@ In build #2 the assertion `add(2, 3) == 999` fails. Jenkins reports the stages *
 
 **Scope.** The Deployment Gate prints an approval message; it does not deploy anything itself. The integration tests call the application through Flask's in-process test client, not over the network.
 
-Evidence: [Q2 in the gallery](docs/EVIDENCE.md#q2---automated-testing-and-deployment-gates)
+Evidence: [Q1 in the gallery](docs/EVIDENCE.md#q1---automated-testing-and-deployment-gates)
 
-## Q3 - Blue-Green deployment
+## Q2 - Blue-Green deployment
 
 **Setup.** [bluegreen/compose.yaml](bluegreen/compose.yaml) starts Blue (v1), Green (v2) and nginx on `127.0.0.1:8086`. The upstream in [bluegreen/conf.d/app.conf](bluegreen/conf.d/app.conf) names the live environment. [scripts/switch-bluegreen.sh](scripts/switch-bluegreen.sh) changes that line, runs `nginx -t` and reloads nginx.
 
@@ -126,57 +80,9 @@ After each switch 50 of 50 further requests returned the new version, and the co
 - Database or data-format changes must work with both versions. This lab's application has no database, so that was not tested.
 - "Zero downtime" was shown for short, stateless requests. Long-running connections were not tested.
 
-Evidence: [Q3 in the gallery](docs/EVIDENCE.md#q3---blue-green-deployment)
+Evidence: [Q2 in the gallery](docs/EVIDENCE.md#q2---blue-green-deployment)
 
-## Q4 - GitOps using Argo CD
-
-**Setup.** Argo CD v3.6.3 was installed on the Minikube cluster. The application is defined declaratively in [gitops/application.yaml](gitops/application.yaml): repository `Adityaporwal18/devops-lab4`, revision `main`, path `gitops/manifests`, automated sync with `prune` and `selfHeal`. Git is the single source of truth: the Deployment was never changed with `kubectl`, except once on purpose to test drift.
-
-**Results.**
-
-| Step | What happened | Evidence |
-|---|---|---|
-| First sync | Argo CD created the Deployment (2/2), two pods and the Service from Git | [screenshot](docs/evidence/screenshots/39-gitops-initial-two-replicas.png) |
-| Change through Git | `replicas: 2` changed to `3`, commit `de1a448` pushed at 14:40:43. Argo CD synced it at 14:42:52 and the Deployment reached 3/3 | [screenshot](docs/evidence/screenshots/43-gitops-argocd-synced-three-replicas.png) |
-| Manual drift | `kubectl scale --replicas=1` at 14:44:04. Without any further command the Deployment was back at 3/3 at 14:44:13 | [screenshot](docs/evidence/screenshots/45-gitops-self-heal-after-manual-drift.png) |
-
-The Deployment's events show all four changes in order: 0 to 2, 2 to 3, 3 to 1 and 1 to 3.
-
-![Self-heal after a manual change](docs/evidence/screenshots/45-gitops-self-heal-after-manual-drift.png)
-
-![Argo CD resource tree](docs/evidence/screenshots/44-argocd-tree-three-replicas.png)
-
-**Observation.** The Git change took about two minutes to arrive because Argo CD polls the repository at an interval. The manual drift was corrected in about nine seconds because Argo CD watches the cluster continuously.
-
-Evidence: [Q4 in the gallery](docs/EVIDENCE.md#q4---gitops-using-argo-cd)
-
-## Q6 - Secure secret management
-
-**Secret stores used.** The pipeline uses the **Jenkins credential store** and the deployment uses **Kubernetes Secrets**. A separate vault product such as HashiCorp Vault was not used.
-
-**Pipeline: Jenkins credentials.** A *Secret text* credential `lab4-api-key` is stored in Jenkins. The pipeline stage **Secure Secret Management** loads it with `withCredentials` and deliberately tries to print it. The console shows `Masking supported pattern matches of $API_KEY` and prints `****` instead of the value (build #4).
-
-![The secret is masked in the console](docs/evidence/screenshots/30-jenkins-build-4-secret-masked.png)
-
-**Deployment: Kubernetes Secrets.** A Secret `lab4-app-secret` is created from a random value generated on the command line, so the value is never typed or stored in a file. The Pod in [secrets/secret-demo-pod.yaml](secrets/secret-demo-pod.yaml) reads it through `secretKeyRef` and logs `Kubernetes Secret injected successfully`. `kubectl describe secret` shows only the key name and size.
-
-**Safe handling.**
-
-| Practice | How it was applied |
-|---|---|
-| No secrets in Git | No secret value is in the repository, the screenshots or the logs; `.env` files are ignored by Git |
-| No secrets in logs | Jenkins masked the value; the Kubernetes demo prints only the length |
-| Demo values only | Both secrets are random strings generated for this lab |
-
-**Security notes.**
-
-- Jenkins masks exact matches only. A transformed secret (for example base64-encoded) would not be masked, so pipelines should never print secrets at all.
-- Kubernetes Secrets are base64-encoded, not encrypted, unless encryption at rest is configured. Access must be limited with RBAC.
-- Production systems should use an external secret manager with access control, audit logs and rotation.
-
-Evidence: [Q6 in the gallery](docs/EVIDENCE.md#q6---secure-secret-management)
-
-## Q7 - Canary deployment, rollout metrics and rollback triggers
+## Q3 - Canary deployment, rollout metrics and rollback triggers
 
 **Setup.** [canary/compose.yaml](canary/compose.yaml) uses weighted nginx upstreams, so a fixed share of requests goes to the new version. [scripts/set-canary-weights.sh](scripts/set-canary-weights.sh) writes the weights, tests and reloads nginx.
 
@@ -220,9 +126,103 @@ Evidence: [Q6 in the gallery](docs/EVIDENCE.md#q6---secure-secret-management)
 - The check was run by hand after each step. In production it would run continuously.
 - A sample of 100 requests cannot detect an error rate much below 1%.
 
-Evidence: [Q7 in the gallery](docs/EVIDENCE.md#q7---canary-deployment-rollout-metrics-and-rollback-triggers)
+Evidence: [Q3 in the gallery](docs/EVIDENCE.md#q3---canary-deployment-rollout-metrics-and-rollback-triggers)
 
-## Q5 - Advanced deployment strategies report
+## Q4 - GitOps using Argo CD
+
+**Setup.** Argo CD v3.6.3 was installed on the Minikube cluster. The application is defined declaratively in [gitops/application.yaml](gitops/application.yaml): repository `Adityaporwal18/devops-lab4`, revision `main`, path `gitops/manifests`, automated sync with `prune` and `selfHeal`. Git is the single source of truth: the Deployment was never changed with `kubectl`, except once on purpose to test drift.
+
+**Results.**
+
+| Step | What happened | Evidence |
+|---|---|---|
+| First sync | Argo CD created the Deployment (2/2), two pods and the Service from Git | [screenshot](docs/evidence/screenshots/39-gitops-initial-two-replicas.png) |
+| Change through Git | `replicas: 2` changed to `3`, commit `de1a448` pushed at 14:40:43. Argo CD synced it at 14:42:52 and the Deployment reached 3/3 | [screenshot](docs/evidence/screenshots/43-gitops-argocd-synced-three-replicas.png) |
+| Manual drift | `kubectl scale --replicas=1` at 14:44:04. Without any further command the Deployment was back at 3/3 at 14:44:13 | [screenshot](docs/evidence/screenshots/45-gitops-self-heal-after-manual-drift.png) |
+
+The Deployment's events show all four changes in order: 0 to 2, 2 to 3, 3 to 1 and 1 to 3.
+
+![Self-heal after a manual change](docs/evidence/screenshots/45-gitops-self-heal-after-manual-drift.png)
+
+![Argo CD resource tree](docs/evidence/screenshots/44-argocd-tree-three-replicas.png)
+
+**Observation.** The Git change took about two minutes to arrive because Argo CD polls the repository at an interval. The manual drift was corrected in about nine seconds because Argo CD watches the cluster continuously.
+
+Evidence: [Q4 in the gallery](docs/EVIDENCE.md#q4---gitops-using-argo-cd)
+
+## Q5 - Secure secret management
+
+**Secret stores used.** The pipeline uses the **Jenkins credential store** and the deployment uses **Kubernetes Secrets**. A separate vault product such as HashiCorp Vault was not used.
+
+**Pipeline: Jenkins credentials.** A *Secret text* credential `lab4-api-key` is stored in Jenkins. The pipeline stage **Secure Secret Management** loads it with `withCredentials` and deliberately tries to print it. The console shows `Masking supported pattern matches of $API_KEY` and prints `****` instead of the value (build #4).
+
+![The secret is masked in the console](docs/evidence/screenshots/30-jenkins-build-4-secret-masked.png)
+
+**Deployment: Kubernetes Secrets.** A Secret `lab4-app-secret` is created from a random value generated on the command line, so the value is never typed or stored in a file. The Pod in [secrets/secret-demo-pod.yaml](secrets/secret-demo-pod.yaml) reads it through `secretKeyRef` and logs `Kubernetes Secret injected successfully`. `kubectl describe secret` shows only the key name and size.
+
+**Safe handling.**
+
+| Practice | How it was applied |
+|---|---|
+| No secrets in Git | No secret value is in the repository, the screenshots or the logs; `.env` files are ignored by Git |
+| No secrets in logs | Jenkins masked the value; the Kubernetes demo prints only the length |
+| Demo values only | Both secrets are random strings generated for this lab |
+
+**Security notes.**
+
+- Jenkins masks exact matches only. A transformed secret (for example base64-encoded) would not be masked, so pipelines should never print secrets at all.
+- Kubernetes Secrets are base64-encoded, not encrypted, unless encryption at rest is configured. Access must be limited with RBAC.
+- Production systems should use an external secret manager with access control, audit logs and rotation.
+
+Evidence: [Q5 in the gallery](docs/EVIDENCE.md#q5---secure-secret-management)
+
+## Q6 - Disaster recovery and failover
+
+**Design.**
+
+| Part | Mechanism | Files |
+|---|---|---|
+| Backup | The data file on a Kubernetes persistent volume is copied out with `kubectl cp` and its SHA-256 checksum is recorded | [disaster-recovery/pvc.yaml](disaster-recovery/pvc.yaml), [disaster-recovery/pod.yaml](disaster-recovery/pod.yaml) |
+| Restore | [scripts/restore-data.sh](scripts/restore-data.sh) copies the backup back, times the restore in milliseconds and compares checksums | |
+| Failover | A second environment (Green) runs next to the live one (Blue). If Blue fails, nginx is switched to Green by [scripts/failover-test.sh](scripts/failover-test.sh) | [bluegreen/compose.yaml](bluegreen/compose.yaml) |
+
+**Recovery objectives.** The targets in [disaster-recovery/TARGETS.md](disaster-recovery/TARGETS.md) were committed before the tests were run.
+
+| Objective | Target | Measured | Met |
+|---|---|---|---|
+| RTO - data restore | 30 s | 379 ms | Yes |
+| RPO - data | No loss of data written before the latest backup | Restored file has the same SHA-256 as the backup | Yes |
+| RTO - service failover | 60 s | 7.3 s of failed requests | Yes |
+
+RTO (Recovery Time Objective) is the longest acceptable time to restore service. RPO (Recovery Point Objective) is the largest acceptable data loss, expressed as time since the last good backup.
+
+**Backup and restore.** A test record was written to the volume and backed up; original and backup had the same checksum. The file was then deleted (`No such file or directory`) and restored by the script in 379 ms with a matching checksum. The record also survived deleting and recreating the Pod, because the data lives on the persistent volume.
+
+![Delete and timed restore](docs/evidence/screenshots/51-dr-delete-and-timed-restore.png)
+
+**Failover.** The test starts a request stream (one request every 0.25 s), kills Blue, waits 5 seconds as a simulated detection time and switches nginx to Green.
+
+| Time | Event |
+|---|---|
+| 14:47:34.6 | Blue is killed |
+| 14:47:35.1 | First failed request (HTTP 502), followed by three HTTP 504 |
+| 14:47:40.5 | Traffic is switched to Green |
+| 14:47:42.4 | First good request again (`v2`) |
+
+Of 90 requests, 12 returned `v1`, 4 failed and 74 returned `v2`. The measured outage is **7335 ms**. Blue was then started again and kept as the standby.
+
+![Failover test](docs/evidence/screenshots/54-failover-test-run.png)
+
+**Observations and limits.**
+
+- The outage is about two seconds longer than the detection time, because requests already sent to the dead container had to time out.
+- The failover is started by a script, not by automatic health checks, and the 5-second detection time is an assumption. A person noticing the failure would take longer.
+- The RPO result holds because the backup was taken right after the data was written. With scheduled backups the RPO equals the backup interval.
+- The backup is stored on the same machine as the cluster. That protects against deleted data, not against losing the machine.
+
+Evidence: [Q6 in the gallery](docs/EVIDENCE.md#q6---disaster-recovery-and-failover)
+
+## Q7 - Advanced deployment strategies report
 
 This section compares the approaches using the measured results of the other six questions.
 
