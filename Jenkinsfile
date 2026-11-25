@@ -12,6 +12,19 @@ pipeline {
             }
         }
 
+        stage('Secure Secret Management') {
+            steps {
+                withCredentials([string(credentialsId: 'lab4-api-key', variable: 'API_KEY')]) {
+                    sh '''
+                        test -n "$API_KEY"
+                        echo "API credential loaded from the Jenkins credential store"
+                        echo "Length of the secret: ${#API_KEY} characters"
+                        echo "Printing the secret on purpose to show masking: $API_KEY"
+                    '''
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh '''
