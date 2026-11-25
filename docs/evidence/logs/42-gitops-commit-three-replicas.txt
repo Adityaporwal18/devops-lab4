@@ -1,0 +1,24 @@
+aditya@lima-devops:~/devops-lab4$ kubectl get application gitops-demo -n argocd
+NAME          SYNC STATUS   HEALTH STATUS
+gitops-demo   Synced        Healthy
+aditya@lima-devops:~/devops-lab4$ git diff -U0 gitops/manifests/deployment.yaml | tail -n 3
+@@ -7 +7 @@ spec:
+-  replicas: 2
++  replicas: 3
+aditya@lima-devops:~/devops-lab4$ git commit -q -am "Scale gitops-demo to 3 replicas (desired state in Git)"
+aditya@lima-devops:~/devops-lab4$ git push
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (5/5), 503 bytes | 83.00 KiB/s, done.
+Total 5 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/Adityaporwal18/devops-lab4.git
+   c209fb0..de1a448  main -> main
+aditya@lima-devops:~/devops-lab4$ date
+Wed Nov 25 14:40:43 IST 2026
+aditya@lima-devops:~/devops-lab4$ kubectl get deployment gitops-demo
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+gitops-demo   2/2     2            2           2m26s
+aditya@lima-devops:~/devops-lab4$ 

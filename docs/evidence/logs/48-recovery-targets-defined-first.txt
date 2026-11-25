@@ -1,0 +1,16 @@
+aditya@lima-devops:~/devops-lab4$ cat disaster-recovery/TARGETS.md
+# Recovery targets for Lab 4
+
+These targets were written down before the recovery tests were run.
+
+| Objective | Target | How it is measured |
+|---|---|---|
+| RTO - service failover | Traffic is served again within 60 seconds of the failure | Request stream during `scripts/failover-test.sh`: time from the first failed request to the first good request |
+| RTO - data restore | A deleted data file is restored within 30 seconds | Millisecond timer around the restore command in `scripts/restore-data.sh` |
+| RPO - data | No loss of data written before the latest backup | SHA-256 of the restored file equals the SHA-256 of the backup |
+
+**RTO** (Recovery Time Objective) is the longest acceptable time to restore service.
+**RPO** (Recovery Point Objective) is the largest acceptable amount of data loss, expressed as time since the last good backup.
+aditya@lima-devops:~/devops-lab4$ git log --oneline -n 1 -- disaster-recovery/TARGETS.md
+f9db6f9 Add canary, failover and restore scripts and recovery targets
+aditya@lima-devops:~/devops-lab4$ 

@@ -1,0 +1,22 @@
+aditya@lima-devops:~/devops-lab4$ git status --short
+ M bluegreen/conf.d/app.conf
+aditya@lima-devops:~/devops-lab4$ git add -A
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Record failover state (traffic on green) and add recovery manifests"
+aditya@lima-devops:~/devops-lab4$ git push
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 464 bytes | 464.00 KiB/s, done.
+Total 5 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/Adityaporwal18/devops-lab4.git
+   de1a448..51515d9  main -> main
+aditya@lima-devops:~/devops-lab4$ git log --oneline -n 6
+51515d9 (HEAD -> main, origin/main) Record failover state (traffic on green) and add recovery manifests
+de1a448 Scale gitops-demo to 3 replicas (desired state in Git)
+c209fb0 Add Secure Secret Management stage using a Jenkins credential
+5c3f40d Canary rolled back: all traffic to v1
+f9db6f9 Add canary, failover and restore scripts and recovery targets
+44ddae7 Fix switch script: do not read from the terminal when run in the background
+aditya@lima-devops:~/devops-lab4$ 

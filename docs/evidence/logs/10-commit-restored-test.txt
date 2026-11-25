@@ -1,0 +1,18 @@
+aditya@lima-devops:~/devops-lab4$ git diff -U0 tests/test_unit.py | tail -n 3
+@@ -4 +4 @@ def test_add_positive_numbers():
+-    assert add(2, 3) == 999
++    assert add(2, 3) == 5
+aditya@lima-devops:~/devops-lab4$ git commit -q -am "Restore the correct assertion"
+aditya@lima-devops:~/devops-lab4$ git push
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 387 bytes | 387.00 KiB/s, done.
+Total 4 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/Adityaporwal18/devops-lab4.git
+   3feba7a..177c2eb  main -> main
+aditya@lima-devops:~/devops-lab4$ date
+Wed Nov 25 14:14:04 IST 2026
+aditya@lima-devops:~/devops-lab4$ 

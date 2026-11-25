@@ -1,0 +1,24 @@
+aditya@lima-devops:~/devops-lab4$ scripts/set-canary-weights.sh 1 0
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 08:54:28 [notice] 51#51: signal process started
+canary weights now: blue(v1)=1 green(v2)=0
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
+upstream application {
+    server blue:5004 weight=1;
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://application;
+    }
+}
+aditya@lima-devops:~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
+requests: 100
+v1: 100
+v2: 0
+errors: 0
+average response time: 8.5 ms
+aditya@lima-devops:~/devops-lab4$ 

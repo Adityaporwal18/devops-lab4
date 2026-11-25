@@ -1,0 +1,13 @@
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml up -d blue
+[+] up 1/1
+ ✔ Container bluegreen-blue-1 Started                                                                                      0.5s
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml ps --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
+SERVICE   STATE     STATUS
+blue      running   Up 6 seconds
+green     running   Up 32 minutes
+nginx     running   Up 32 minutes
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T blue python -c "import urllib.request; print('blue :', urllib.request.urlopen('http://localhost:5004/health').read().decode().strip())"
+blue : {"status":"healthy"}
+aditya@lima-devops:~/devops-lab4$ curl -s http://localhost:8086/
+{"application":"DevOps Lab 4","status":"running","version":"v2"}
+aditya@lima-devops:~/devops-lab4$ 

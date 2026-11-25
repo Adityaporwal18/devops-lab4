@@ -1,0 +1,31 @@
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- rm /data/record.txt
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- ls -la /data
+total 8
+drwxrwxrwx    2 root     root          4096 Nov 25 09:16 .
+drwxr-xr-x    1 root     root          4096 Nov 25 09:15 ..
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
+cat: can't open '/data/record.txt': No such file or directory
+command terminated with exit code 1
+aditya@lima-devops:~/devops-lab4$ cat scripts/restore-data.sh
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+backup="disaster-recovery/backups/record.txt"
+pod="lab4-dr-pod"
+start="$(date +%s%3N)"
+kubectl cp "$backup" "${pod}:/data/record.txt" < /dev/null
+end="$(date +%s%3N)"
+echo "restore took: $(( end - start )) ms"
+local_sum="$(sha256sum "$backup" | awk '{print $1}')"
+pod_sum="$(kubectl exec "$pod" -- sha256sum /data/record.txt < /dev/null | awk '{print $1}')"
+echo "backup   sha256: $local_sum"
+echo "restored sha256: $pod_sum"
+if [ "$local_sum" = "$pod_sum" ]; then echo "checksums match"; else echo "CHECKSUM MISMATCH"; exit 1; fi
+aditya@lima-devops:~/devops-lab4$ scripts/restore-data.sh
+restore took: 379 ms
+backup   sha256: ca01ee6017f5defd6ea21a1b6a37ac870da7f068202132a604b7f8ede4af9305
+restored sha256: ca01ee6017f5defd6ea21a1b6a37ac870da7f068202132a604b7f8ede4af9305
+checksums match
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
+Lab 4 disaster recovery test record written at 2026-11-25T09:15:44+00:00
+aditya@lima-devops:~/devops-lab4$ 

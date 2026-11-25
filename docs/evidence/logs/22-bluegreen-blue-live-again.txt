@@ -1,0 +1,13 @@
+aditya@lima-devops:~/devops-lab4$ cat /tmp/switch-to-blue.log
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 08:50:55 [notice] 100#100: signal process started
+nginx now sends all traffic to: blue
+aditya@lima-devops:~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
+requests: 50
+v1: 50
+v2: 0
+errors: 0
+aditya@lima-devops:~/devops-lab4$ git add scripts/switch-bluegreen.sh
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Fix switch script: do not read from the terminal when run in the background"
+aditya@lima-devops:~/devops-lab4$ 

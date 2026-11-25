@@ -1,0 +1,125 @@
+Started by an SCM change
+Obtained Jenkinsfile from git https://github.com/Adityaporwal18/devops-lab4.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/devops-lab4
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/devops-lab4/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/Adityaporwal18/devops-lab4.git # timeout=10
+Fetching upstream changes from https://github.com/Adityaporwal18/devops-lab4.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/Adityaporwal18/devops-lab4.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision c209fb0b51681b6e4c2f035dd3deb1b940a311d6 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f c209fb0b51681b6e4c2f035dd3deb1b940a311d6 # timeout=10
+Commit message: "Add Secure Secret Management stage using a Jenkins credential"
+ > git rev-list --no-walk 177c2ebdd8192eafa0f470d0e9e6fa699e11519c # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/devops-lab4/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/Adityaporwal18/devops-lab4.git # timeout=10
+Fetching upstream changes from https://github.com/Adityaporwal18/devops-lab4.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/Adityaporwal18/devops-lab4.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision c209fb0b51681b6e4c2f035dd3deb1b940a311d6 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f c209fb0b51681b6e4c2f035dd3deb1b940a311d6 # timeout=10
+Commit message: "Add Secure Secret Management stage using a Jenkins credential"
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Secure Secret Management)
+[Pipeline] withCredentials
+Masking supported pattern matches of $API_KEY
+[Pipeline] {
+[Pipeline] sh
++ test -n ****
++ echo API credential loaded from the Jenkins credential store
+API credential loaded from the Jenkins credential store
++ echo Length of the secret: 29 characters
+Length of the secret: 29 characters
++ echo Printing the secret on purpose to show masking: ****
+Printing the secret on purpose to show masking: ****
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Install Dependencies)
+[Pipeline] sh
++ python3 -m venv .jenkins-venv
++ .jenkins-venv/bin/python -m pip install -q -r requirements.txt
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Unit Tests)
+[Pipeline] sh
++ .jenkins-venv/bin/python -m pytest -v tests/test_unit.py
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /var/lib/jenkins/workspace/devops-lab4/.jenkins-venv/bin/python
+cachedir: .pytest_cache
+rootdir: /var/lib/jenkins/workspace/devops-lab4
+collecting ... collected 3 items
+
+tests/test_unit.py::test_add_positive_numbers PASSED                     [ 33%]
+tests/test_unit.py::test_add_negative_numbers PASSED                     [ 66%]
+tests/test_unit.py::test_add_zero PASSED                                 [100%]
+
+============================== 3 passed in 0.17s ===============================
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Integration Tests)
+[Pipeline] sh
++ .jenkins-venv/bin/python -m pytest -v tests/test_integration.py
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /var/lib/jenkins/workspace/devops-lab4/.jenkins-venv/bin/python
+cachedir: .pytest_cache
+rootdir: /var/lib/jenkins/workspace/devops-lab4
+collecting ... collected 3 items
+
+tests/test_integration.py::test_homepage PASSED                          [ 33%]
+tests/test_integration.py::test_health_endpoint PASSED                   [ 66%]
+tests/test_integration.py::test_version PASSED                           [100%]
+
+============================== 3 passed in 0.13s ===============================
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deployment Gate)
+[Pipeline] echo
+All tests passed. Deployment approved.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] echo
+Lab 4 CI/CD pipeline SUCCESS
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

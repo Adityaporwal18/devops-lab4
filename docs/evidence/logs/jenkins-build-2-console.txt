@@ -1,0 +1,110 @@
+Started by an SCM change
+Obtained Jenkinsfile from git https://github.com/Adityaporwal18/devops-lab4.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/devops-lab4
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/devops-lab4/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/Adityaporwal18/devops-lab4.git # timeout=10
+Fetching upstream changes from https://github.com/Adityaporwal18/devops-lab4.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/Adityaporwal18/devops-lab4.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 3feba7a8dfc77eeaf2f122221caedc4624667e82 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 3feba7a8dfc77eeaf2f122221caedc4624667e82 # timeout=10
+Commit message: "Introduce a deliberately failing assertion to test the deployment gate"
+ > git rev-list --no-walk 45552cba7df1599f215185d75ce1578ab7b045d9 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/devops-lab4/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/Adityaporwal18/devops-lab4.git # timeout=10
+Fetching upstream changes from https://github.com/Adityaporwal18/devops-lab4.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/Adityaporwal18/devops-lab4.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 3feba7a8dfc77eeaf2f122221caedc4624667e82 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 3feba7a8dfc77eeaf2f122221caedc4624667e82 # timeout=10
+Commit message: "Introduce a deliberately failing assertion to test the deployment gate"
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Install Dependencies)
+[Pipeline] sh
++ python3 -m venv .jenkins-venv
++ .jenkins-venv/bin/python -m pip install -q -r requirements.txt
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Unit Tests)
+[Pipeline] sh
++ .jenkins-venv/bin/python -m pytest -v tests/test_unit.py
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /var/lib/jenkins/workspace/devops-lab4/.jenkins-venv/bin/python
+cachedir: .pytest_cache
+rootdir: /var/lib/jenkins/workspace/devops-lab4
+collecting ... collected 3 items
+
+tests/test_unit.py::test_add_positive_numbers FAILED                     [ 33%]
+tests/test_unit.py::test_add_negative_numbers PASSED                     [ 66%]
+tests/test_unit.py::test_add_zero PASSED                                 [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_add_positive_numbers ___________________________
+
+    def test_add_positive_numbers():
+>       assert add(2, 3) == 999
+E       assert 5 == 999
+E        +  where 5 = add(2, 3)
+
+tests/test_unit.py:4: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_unit.py::test_add_positive_numbers - assert 5 == 999
+ +  where 5 = add(2, 3)
+========================= 1 failed, 2 passed in 0.13s ==========================
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Integration Tests)
+Stage "Integration Tests" skipped due to earlier failure(s)
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deployment Gate)
+Stage "Deployment Gate" skipped due to earlier failure(s)
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] echo
+Tests failed. Deployment BLOCKED.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 1
+Finished: FAILURE

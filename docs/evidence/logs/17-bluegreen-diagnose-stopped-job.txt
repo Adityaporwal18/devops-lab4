@@ -1,0 +1,5 @@
+aditya@lima-devops:~/devops-lab4$ jobs -l
+[1]+ 31627 Stopped (tty input)     ( sleep 3; scripts/switch-bluegreen.sh green > /tmp/switch-to-green.log 2>&1 )
+aditya@lima-devops:~/devops-lab4$ cat /tmp/switch-to-green.log | wc -c
+0
+aditya@lima-devops:~/devops-lab4$ 

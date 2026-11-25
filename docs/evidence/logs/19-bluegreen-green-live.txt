@@ -1,0 +1,25 @@
+aditya@lima-devops:~/devops-lab4$ cat /tmp/switch-to-green.log
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 08:50:23 [notice] 77#77: signal process started
+nginx now sends all traffic to: green
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
+upstream application {
+    server green:5004;
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://application;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 5s;
+    }
+}
+aditya@lima-devops:~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
+requests: 50
+v1: 0
+v2: 50
+errors: 0
+aditya@lima-devops:~/devops-lab4$ 

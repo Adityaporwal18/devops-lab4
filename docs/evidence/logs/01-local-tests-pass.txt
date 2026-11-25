@@ -1,0 +1,22 @@
+aditya@lima-devops:~/devops-lab2$ cd ~/devops-lab4
+aditya@lima-devops:~/devops-lab4$ ls
+Dockerfile   README.md  bluegreen  disaster-recovery  jenkins           scripts  tests
+Jenkinsfile  app.py     canary     gitops             requirements.txt  secrets
+aditya@lima-devops:~/devops-lab4$ python3 -m venv .venv
+aditya@lima-devops:~/devops-lab4$ .venv/bin/python -m pip install -q -r requirements.txt
+aditya@lima-devops:~/devops-lab4$ .venv/bin/python -m pytest -v
+===================================================== test session starts =====================================================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /home/aditya/devops-lab4/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/aditya/devops-lab4
+collected 6 items                                                                                                             
+
+tests/test_integration.py::test_homepage PASSED                                                                         [ 16%]
+tests/test_integration.py::test_health_endpoint PASSED                                                                  [ 33%]
+tests/test_integration.py::test_version PASSED                                                                          [ 50%]
+tests/test_unit.py::test_add_positive_numbers PASSED                                                                    [ 66%]
+tests/test_unit.py::test_add_negative_numbers PASSED                                                                    [ 83%]
+tests/test_unit.py::test_add_zero PASSED                                                                                [100%]
+
+====================================================== 6 passed in 0.15s ======================================================
+aditya@lima-devops:~/devops-lab4$ 

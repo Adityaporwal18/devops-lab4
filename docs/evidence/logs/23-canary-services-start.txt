@@ -1,0 +1,66 @@
+aditya@lima-devops:~/devops-lab4$ git add -A
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Add canary, failover and restore scripts and recovery targets"
+aditya@lima-devops:~/devops-lab4$ cat canary/conf.d/app.conf
+upstream application {
+    server blue:5004 weight=9;
+    server green:5004 weight=1;
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://application;
+    }
+}
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml up -d --build --quiet-pull
+[+] Building 3.1s (15/15) FINISHED                                                                                             
+ => [internal] load local bake definitions                                                                                0.0s
+ => => reading from stdin 897B                                                                                            0.0s
+ => [green internal] load build definition from Dockerfile                                                                0.1s
+ => => transferring dockerfile: 200B                                                                                      0.0s
+ => [green internal] load metadata for docker.io/library/python:3.14-slim                                                 1.6s
+ => [auth] library/python:pull token for registry-1.docker.io                                                             0.0s
+ => [green internal] load .dockerignore                                                                                   0.0s
+ => => transferring context: 122B                                                                                         0.0s
+ => [blue internal] load build context                                                                                    0.1s
+ => => transferring context: 63B                                                                                          0.0s
+ => [green 1/5] FROM docker.io/library/python:3.14-slim@sha256:22eafb370920ad8b429e0aec3fff433e0669968519f5d60469d83729c  0.1s
+ => => resolve docker.io/library/python:3.14-slim@sha256:22eafb370920ad8b429e0aec3fff433e0669968519f5d60469d83729c138b28  0.1s
+ => CACHED [blue 2/5] WORKDIR /app                                                                                        0.0s
+ => CACHED [blue 3/5] COPY requirements.txt .                                                                             0.0s
+ => CACHED [blue 4/5] RUN pip install --no-cache-dir -r requirements.txt                                                  0.0s
+ => CACHED [blue 5/5] COPY app.py .                                                                                       0.0s
+ => [blue] exporting to image                                                                                             0.2s
+ => => exporting layers                                                                                                   0.0s
+ => => exporting manifest sha256:a85c1ea56ff68ad555c531f2e5d6ae87381835e8b334de4daffabe44fa6ce9da                         0.1s
+ => => exporting config sha256:62b0e0a695dd458a7790d40577290c312e77c103a31bc4139a31b786453b2694                           0.0s
+ => => exporting attestation manifest sha256:8b3c9c7e7950f4c51d6c3c2f65208743daf5345c41d453e90ab2a92852323408             0.0s
+ => => exporting manifest list sha256:3312e602c536cb9c402fd0e620c04aca87f3fe71df41b81782585dd6b81c5bb4                    0.0s
+ => => naming to docker.io/library/canary-blue:latest                                                                     0.0s
+ => => unpacking to docker.io/library/canary-blue:latest                                                                  0.0s
+ => [green] exporting to image                                                                                            0.2s
+ => => exporting layers                                                                                                   0.0s
+ => => exporting manifest sha256:c229b1527d260866bb7a96eea2d2ee5ace070b38312286190ce37ce883719968                         0.0s
+ => => exporting config sha256:3066e816d16983a05e452868c990eda9f25a7712120395cf375373a98353dc86                           0.0s
+ => => exporting attestation manifest sha256:870c6e5e0c06614934b7b9c752a688c53ecda27c4bbb980c7a27bcee8c724158             0.0s
+ => => exporting manifest list sha256:036f0ab2a42c011d45fef9aadf38c90385bfedb9ebc3f965d701059972137f77                    0.0s
+ => => naming to docker.io/library/canary-green:latest                                                                    0.0s
+ => => unpacking to docker.io/library/canary-green:latest                                                                 0.0s
+ => [green] resolving provenance for metadata file                                                                        0.0s
+ => [blue] resolving provenance for metadata file                                                                         0.0s
+[+] up 6/6
+ ✔ Image canary-green       Built                                                                                          3.3s
+ ✔ Image canary-blue        Built                                                                                          3.3s
+ ✔ Network canary_default   Created                                                                                        0.2s
+ ✔ Container canary-green-1 Started                                                                                        2.6s
+ ✔ Container canary-blue-1  Started                                                                                        1.6s
+ ✔ Container canary-nginx-1 Started                                                                                        3.9s
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml ps
+NAME             IMAGE          COMMAND                  SERVICE   CREATED          STATUS         PORTS
+canary-blue-1    canary-blue    "python app.py"          blue      11 seconds ago   Up 9 seconds   5004/tcp
+canary-green-1   canary-green   "python app.py"          green     11 seconds ago   Up 8 seconds   5004/tcp
+canary-nginx-1   nginx:alpine   "/docker-entrypoint.…"   nginx     10 seconds ago   Up 7 seconds   127.0.0.1:8087->80/tcp
+aditya@lima-devops:~/devops-lab4$ curl -s http://localhost:8087/
+{"application":"DevOps Lab 4","status":"running","version":"v1"}
+aditya@lima-devops:~/devops-lab4$ 

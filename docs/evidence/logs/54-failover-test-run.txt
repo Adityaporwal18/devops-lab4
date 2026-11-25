@@ -1,0 +1,20 @@
+aditya@lima-devops:~/devops-lab4$ scripts/failover-test.sh /tmp/failover-stream.log 5
+14:47:34.611  killing blue (simulated failure)
+[+] kill 1/1
+ ✔ Container bluegreen-blue-1 Killed                                                                                       0.6s
+14:47:35.470  blue is down; waiting 5s (simulated detection time)
+14:47:40.484  switching traffic to green
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 09:17:41 [notice] 116#116: signal process started
+nginx now sends all traffic to: green
+14:47:41.129  switch finished
+runs of identical responses (count, status, version):
+     12 200 version v1 
+      1 502 version - 
+      3 504 version - 
+     74 200 version v2 
+first failed request          : 14:47:35.101
+first good request afterwards : 14:47:42.436
+measured outage               : 7335 ms
+aditya@lima-devops:~/devops-lab4$ 

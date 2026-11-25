@@ -1,0 +1,28 @@
+aditya@lima-devops:~/devops-lab4$ git push
+Everything up-to-date
+aditya@lima-devops:~/devops-lab4$ kubectl create namespace argocd
+namespace/argocd created
+aditya@lima-devops:~/devops-lab4$ kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml | tail -n 6
+networkpolicy.networking.k8s.io/argocd-applicationset-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-dex-server-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-notifications-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-redis-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-repo-server-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-server-network-policy serverside-applied
+aditya@lima-devops:~/devops-lab4$ kubectl wait --for=condition=Available deployment --all -n argocd --timeout=900s
+deployment.apps/argocd-applicationset-controller condition met
+deployment.apps/argocd-dex-server condition met
+deployment.apps/argocd-notifications-controller condition met
+deployment.apps/argocd-redis condition met
+deployment.apps/argocd-repo-server condition met
+deployment.apps/argocd-server condition met
+aditya@lima-devops:~/devops-lab4$ kubectl get pods -n argocd
+NAME                                                READY   STATUS    RESTARTS   AGE
+argocd-application-controller-0                     1/1     Running   0          3m42s
+argocd-applicationset-controller-56846db5fb-zc82g   1/1     Running   0          3m47s
+argocd-dex-server-5fd759dd9-tjhjn                   1/1     Running   0          3m47s
+argocd-notifications-controller-84cb67fc5d-cjqwr    1/1     Running   0          3m47s
+argocd-redis-86d4d669f7-shwbb                       1/1     Running   0          3m47s
+argocd-repo-server-966c64566-bw9gh                  1/1     Running   0          3m47s
+argocd-server-677c666df4-qkhjb                      1/1     Running   0          3m46s
+aditya@lima-devops:~/devops-lab4$ 

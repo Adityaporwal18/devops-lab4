@@ -1,0 +1,16 @@
+aditya@lima-devops:~/devops-lab4$ kubectl wait --for=jsonpath='{.status.readyReplicas}'=3 deployment/gitops-demo --timeout=420sdeployment.apps/gitops-demo condition met
+aditya@lima-devops:~/devops-lab4$ date
+Wed Nov 25 14:43:01 IST 2026
+aditya@lima-devops:~/devops-lab4$ kubectl get deployment gitops-demo
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+gitops-demo   3/3     3            3           4m43s
+aditya@lima-devops:~/devops-lab4$ kubectl get pods -l app=gitops-demo
+NAME                           READY   STATUS    RESTARTS   AGE
+gitops-demo-64b6bdb7f4-7k5qm   1/1     Running   0          4m44s
+gitops-demo-64b6bdb7f4-sznnp   1/1     Running   0          4m44s
+gitops-demo-64b6bdb7f4-zdgfd   1/1     Running   0          12s
+aditya@lima-devops:~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.status.sync.status} {.status.health.status} revision={.status.sync.revision}'; echo
+Synced Healthy revision=de1a448e91cfccc238b7a02c387404ab924251b5
+aditya@lima-devops:~/devops-lab4$ git rev-parse HEAD
+de1a448e91cfccc238b7a02c387404ab924251b5
+aditya@lima-devops:~/devops-lab4$ 

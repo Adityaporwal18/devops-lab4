@@ -1,0 +1,26 @@
+aditya@lima-devops:~/devops-lab4$ kubectl get deployment gitops-demo --no-headers
+gitops-demo   3/3   3     3     5m44s
+aditya@lima-devops:~/devops-lab4$ kubectl scale deployment gitops-demo --replicas=1; for i in 1 2 3 4 5 6 7 8 9 10; do echo "$(date +%T)  $(kubectl get deployment gitops-demo --no-headers)"; sleep 2; done
+deployment.apps/gitops-demo scaled
+14:44:04  gitops-demo   3/1   3     3     5m46s
+14:44:07  gitops-demo   1/1   1     1     5m48s
+14:44:09  gitops-demo   1/1   1     1     5m50s
+kubectl get pods -l app=gitops-demo
+14:44:11  gitops-demo   1/3   3     1     5m52s
+14:44:13  gitops-demo   3/3   3     3     5m54s
+14:44:16  gitops-demo   3/3   3     3     5m57s
+14:44:18  gitops-demo   3/3   3     3     5m59s
+14:44:20  gitops-demo   3/3   3     3     6m1s
+14:44:22  gitops-demo   3/3   3     3     6m3s
+14:44:24  gitops-demo   3/3   3     3     6m5s
+kubectl get application gitops-demo -n argocd -o jsonpath='{.status.sync.status} {.status.health.status}'; echo
+aditya@lima-devops:~/devops-lab4$ kubectl get pods -l app=gitops-demo
+NAME                           READY   STATUS    RESTARTS   AGE
+gitops-demo-64b6bdb7f4-7k5qm   1/1     Running   0          6m6s
+gitops-demo-64b6bdb7f4-j2m9d   1/1     Running   0          16s
+gitops-demo-64b6bdb7f4-knzqt   1/1     Running   0          16s
+aditya@lima-devops:~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.status.sync.status} {.status.health.status}'; echo
+Synced Healthy
+aditya@lima-devops:~/devops-lab4$ grep -n replicas gitops/manifests/deployment.yaml
+7:  replicas: 3
+aditya@lima-devops:~/devops-lab4$ 

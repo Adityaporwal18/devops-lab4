@@ -1,0 +1,13 @@
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml down
+[+] down 4/4
+ ✔ Container canary-nginx-1 Removed                                                                                        0.9s
+ ✔ Container canary-blue-1  Removed                                                                                       10.7s
+ ✔ Container canary-green-1 Removed                                                                                       10.7s
+ ✔ Network canary_default   Removed                                                                                        0.2s
+aditya@lima-devops:~/devops-lab4$ git add -A
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Canary rolled back: all traffic to v1"
+aditya@lima-devops:~/devops-lab4$ git log --oneline -n 3
+5c3f40d (HEAD -> main) Canary rolled back: all traffic to v1
+f9db6f9 Add canary, failover and restore scripts and recovery targets
+44ddae7 Fix switch script: do not read from the terminal when run in the background
+aditya@lima-devops:~/devops-lab4$ 

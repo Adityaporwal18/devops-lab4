@@ -1,0 +1,40 @@
+aditya@lima-devops:~/devops-lab4$ git diff -U0 scripts/switch-bluegreen.sh | tail -n 4
+-docker compose exec -T nginx nginx -t
+-docker compose exec -T nginx nginx -s reload
++docker compose exec -T nginx nginx -t < /dev/null
++docker compose exec -T nginx nginx -s reload < /dev/null
+aditya@lima-devops:~/devops-lab4$ curl -s http://localhost:8086/
+{"application":"DevOps Lab 4","status":"running","version":"v1"}
+aditya@lima-devops:~/devops-lab4$ (sleep 3; scripts/switch-bluegreen.sh green > /tmp/switch-to-green.log 2>&1) &
+[1] 33728
+aditya@lima-devops:~/devops-lab4$ scripts/request-stream.sh http://localhost:8086/ 28 0.25
+14:20:21.801  request 01  HTTP 200  version v1
+14:20:22.060  request 02  HTTP 200  version v1
+14:20:22.321  request 03  HTTP 200  version v1
+14:20:22.592  request 04  HTTP 200  version v1
+14:20:22.857  request 05  HTTP 200  version v1
+14:20:23.120  request 06  HTTP 200  version v1
+14:20:23.397  request 07  HTTP 200  version v1
+14:20:23.691  request 08  HTTP 200  version v1
+14:20:23.957  request 09  HTTP 200  version v1
+14:20:24.247  request 10  HTTP 200  version v2
+14:20:24.539  request 11  HTTP 200  version v2
+14:20:24.804  request 12  HTTP 200  version v2
+14:20:25.080  request 13  HTTP 200  version v2
+14:20:25.349  request 14  HTTP 200  version v2
+14:20:25.644  request 15  HTTP 200  version v2
+14:20:25.924  request 16  HTTP 200  version v2
+14:20:26.192  request 17  HTTP 200  version v2
+14:20:26.471  request 18  HTTP 200  version v2
+14:20:26.743  request 19  HTTP 200  version v2
+14:20:27.008  request 20  HTTP 200  version v2
+14:20:27.294  request 21  HTTP 200  version v2
+14:20:27.567  request 22  HTTP 200  version v2
+14:20:27.839  request 23  HTTP 200  version v2
+14:20:28.098  request 24  HTTP 200  version v2
+14:20:28.359  request 25  HTTP 200  version v2
+14:20:28.633  request 26  HTTP 200  version v2
+14:20:28.921  request 27  HTTP 200  version v2
+14:20:29.187  request 28  HTTP 200  version v2
+[1]+  Done                    ( sleep 3; scripts/switch-bluegreen.sh green > /tmp/switch-to-green.log 2>&1 )
+aditya@lima-devops:~/devops-lab4$ 

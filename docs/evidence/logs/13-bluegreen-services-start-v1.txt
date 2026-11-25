@@ -1,0 +1,74 @@
+aditya@lima-devops:~/devops-lab4$ cat bluegreen/conf.d/app.conf
+upstream application {
+    server blue:5004;
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://application;
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 5s;
+    }
+}
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml up -d --build --quiet-pull
+[+] up 1/1
+ ✔ Image nginx:alpine Pulled                                                                                               6.9s
+[+] Building 18.1s (15/15) FINISHED                                                                                            
+ => [internal] load local bake definitions                                                                                0.0s
+ => => reading from stdin 909B                                                                                            0.0s
+ => [green internal] load build definition from Dockerfile                                                                0.1s
+ => => transferring dockerfile: 200B                                                                                      0.0s
+ => [green internal] load metadata for docker.io/library/python:3.14-slim                                                 3.2s
+ => [auth] library/python:pull token for registry-1.docker.io                                                             0.0s
+ => [blue internal] load .dockerignore                                                                                    0.0s
+ => => transferring context: 122B                                                                                         0.0s
+ => [green 1/5] FROM docker.io/library/python:3.14-slim@sha256:22eafb370920ad8b429e0aec3fff433e0669968519f5d60469d83729c  2.5s
+ => => resolve docker.io/library/python:3.14-slim@sha256:22eafb370920ad8b429e0aec3fff433e0669968519f5d60469d83729c138b28  0.0s
+ => => sha256:12db2f21086e6c1441ae8e8d3fafc1d3582ebb89880237b7c42e3d7c998d0574 249B / 249B                                0.3s
+ => => sha256:1fd18b97e74b2796460d7940b513bb8863f3ed61949762497eb430314f2ae420 12.32MB / 12.32MB                          1.4s
+ => => sha256:17578a6f8b68fc5004e0f0131ad626f6efcb95ed0c8240a1edbd389b8d0aae26 1.27MB / 1.27MB                            0.7s
+ => => extracting sha256:17578a6f8b68fc5004e0f0131ad626f6efcb95ed0c8240a1edbd389b8d0aae26                                 0.2s
+ => => extracting sha256:1fd18b97e74b2796460d7940b513bb8863f3ed61949762497eb430314f2ae420                                 0.9s
+ => => extracting sha256:12db2f21086e6c1441ae8e8d3fafc1d3582ebb89880237b7c42e3d7c998d0574                                 0.1s
+ => [green internal] load build context                                                                                   0.0s
+ => => transferring context: 517B                                                                                         0.0s
+ => [blue 2/5] WORKDIR /app                                                                                               0.1s
+ => [green 3/5] COPY requirements.txt .                                                                                   0.0s
+ => [blue 4/5] RUN pip install --no-cache-dir -r requirements.txt                                                         8.5s
+ => [green 5/5] COPY app.py .                                                                                             0.1s
+ => [green] exporting to image                                                                                            2.7s 
+ => => exporting layers                                                                                                   1.6s 
+ => => exporting manifest sha256:9a138cf33d6d24b22848ab06eebfc9e82061d5c658d496e37b5d28afeccdd531                         0.0s 
+ => => exporting config sha256:11050ccd3299ef4d04622d43b13b7c340ca8b1b0e7e8d7e9fda84284f760865e                           0.0s 
+ => => exporting attestation manifest sha256:806630a99db087f2249fced7832d9cabcabf1f0263bfb8a86ae6478b8c764f4d             0.0s 
+ => => exporting manifest list sha256:e126cb98f206d7d1df292c367ab5e2ccb8f5f0707cff1ae5662eb463ac0d30c0                    0.0s
+ => => naming to docker.io/library/bluegreen-green:latest                                                                 0.0s
+ => => unpacking to docker.io/library/bluegreen-green:latest                                                              1.0s
+ => [blue] exporting to image                                                                                             2.7s
+ => => exporting layers                                                                                                   1.6s
+ => => exporting manifest sha256:b5031415845fc8c39f517da941c53ef1b2b43fca20a7bd390e62caf20578e794                         0.0s
+ => => exporting config sha256:ea0b37a2a659332fced1aaacdfd3d01b3c02f05e0ed86bc3ef5302fae6d85b80                           0.0s
+ => => exporting attestation manifest sha256:b3511fd74be5b830cae37509849e9d8d003fb29efb9c0bb9281b2578c2fc5216             0.0s
+ => => exporting manifest list sha256:de7850a28123084a84e4a1c2c69e37238a5cda6e9121057fcb1303b8d41f77b3                    0.0s
+ => => naming to docker.io/library/bluegreen-blue:latest                                                                  0.0s
+ => => unpacking to docker.io/library/bluegreen-blue:latest                                                               1.0s
+ => [blue] resolving provenance for metadata file                                                                         0.1s
+ => [green] resolving provenance for metadata file                                                                        0.1s
+[+] up 7/7
+ ✔ Image nginx:alpine          Pulled                                                                                      6.9s
+ ✔ Image bluegreen-green       Built                                                                                      18.5s
+ ✔ Image bluegreen-blue        Built                                                                                      18.5s
+ ✔ Network bluegreen_default   Created                                                                                     0.1s
+ ✔ Container bluegreen-green-1 Started                                                                                     1.1s
+ ✔ Container bluegreen-blue-1  Started                                                                                     1.4s
+ ✔ Container bluegreen-nginx-1 Started                                                                                     1.7s
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml ps
+NAME                IMAGE             COMMAND                  SERVICE   CREATED         STATUS         PORTS
+bluegreen-blue-1    bluegreen-blue    "python app.py"          blue      8 seconds ago   Up 6 seconds   5004/tcp
+bluegreen-green-1   bluegreen-green   "python app.py"          green     8 seconds ago   Up 7 seconds   5004/tcp
+bluegreen-nginx-1   nginx:alpine      "/docker-entrypoint.…"   nginx     7 seconds ago   Up 6 seconds   127.0.0.1:8086->80/tcp
+aditya@lima-devops:~/devops-lab4$ curl -s http://localhost:8086/
+{"application":"DevOps Lab 4","status":"running","version":"v1"}
+aditya@lima-devops:~/devops-lab4$ 

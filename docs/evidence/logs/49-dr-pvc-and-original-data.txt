@@ -1,0 +1,14 @@
+aditya@lima-devops:~/devops-lab4$ kubectl apply -f disaster-recovery/pvc.yaml -f disaster-recovery/pod.yaml
+persistentvolumeclaim/lab4-dr-pvc created
+pod/lab4-dr-pod created
+aditya@lima-devops:~/devops-lab4$ kubectl wait --for=condition=Ready pod/lab4-dr-pod --timeout=180s
+pod/lab4-dr-pod condition met
+aditya@lima-devops:~/devops-lab4$ kubectl get pvc lab4-dr-pvc
+NAME          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+lab4-dr-pvc   Bound    pvc-677c70fb-68e8-493e-8f8a-1d1ea1136070   100Mi      RWO            standard       <unset>                 3s
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- sh -c 'echo "Lab 4 disaster recovery test record written at $(date -Is)" > /data/record.txt'
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
+Lab 4 disaster recovery test record written at 2026-11-25T09:15:44+00:00
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- sha256sum /data/record.txt
+ca01ee6017f5defd6ea21a1b6a37ac870da7f068202132a604b7f8ede4af9305  /data/record.txt
+aditya@lima-devops:~/devops-lab4$ 

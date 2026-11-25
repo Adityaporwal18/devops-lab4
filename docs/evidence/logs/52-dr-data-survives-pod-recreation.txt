@@ -1,0 +1,11 @@
+aditya@lima-devops:~/devops-lab4$ kubectl delete pod lab4-dr-pod --wait=true
+pod "lab4-dr-pod" deleted from default namespace
+aditya@lima-devops:~/devops-lab4$ kubectl apply -f disaster-recovery/pod.yaml
+pod/lab4-dr-pod created
+aditya@lima-devops:~/devops-lab4$ kubectl wait --for=condition=Ready pod/lab4-dr-pod --timeout=180s
+pod/lab4-dr-pod condition met
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
+Lab 4 disaster recovery test record written at 2026-11-25T09:15:44+00:00
+aditya@lima-devops:~/devops-lab4$ kubectl exec lab4-dr-pod -- sha256sum /data/record.txt
+ca01ee6017f5defd6ea21a1b6a37ac870da7f068202132a604b7f8ede4af9305  /data/record.txt
+aditya@lima-devops:~/devops-lab4$ 

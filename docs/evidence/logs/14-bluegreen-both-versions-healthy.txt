@@ -1,0 +1,9 @@
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T blue python -c "import urllib.request; print('blue :', urllib.request.urlopen('http://localhost:5004/').read().decode().strip())"
+blue : {"application":"DevOps Lab 4","status":"running","version":"v1"}
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T green python -c "import urllib.request; print('green:', urllib.request.urlopen('http://localhost:5004/').read().decode().strip())"
+green: {"application":"DevOps Lab 4","status":"running","version":"v2"}
+aditya@lima-devops:~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T green python -c "import urllib.request; print('green health:', urllib.request.urlopen('http://localhost:5004/health').read().decode().strip())"
+green health: {"status":"healthy"}
+aditya@lima-devops:~/devops-lab4$ curl -s http://localhost:8086/
+{"application":"DevOps Lab 4","status":"running","version":"v1"}
+aditya@lima-devops:~/devops-lab4$ 

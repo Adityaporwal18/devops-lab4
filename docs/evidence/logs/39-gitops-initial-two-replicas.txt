@@ -1,0 +1,13 @@
+aditya@lima-devops:~/devops-lab4$ kubectl get deployment gitops-demo
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+gitops-demo   2/2     2            2           24s
+aditya@lima-devops:~/devops-lab4$ kubectl get pods -l app=gitops-demo
+NAME                           READY   STATUS    RESTARTS   AGE
+gitops-demo-64b6bdb7f4-7k5qm   1/1     Running   0          23s
+gitops-demo-64b6bdb7f4-sznnp   1/1     Running   0          23s
+aditya@lima-devops:~/devops-lab4$ kubectl get service gitops-demo
+NAME          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+gitops-demo   ClusterIP   10.97.50.168   <none>        80/TCP    25s
+aditya@lima-devops:~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.spec.syncPolicy}'; echo
+{"automated":{"prune":true,"selfHeal":true}}
+aditya@lima-devops:~/devops-lab4$ 

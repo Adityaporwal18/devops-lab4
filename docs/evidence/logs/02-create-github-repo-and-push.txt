@@ -1,0 +1,25 @@
+aditya@lima-devops:~/devops-lab4$ git init
+Initialized empty Git repository in /home/aditya/devops-lab4/.git/
+aditya@lima-devops:~/devops-lab4$ git add -A
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Initial Lab 4 project: application, tests, pipeline and deployment files"
+aditya@lima-devops:~/devops-lab4$ gh repo create devops-lab4 --public --source=. --remote=origin --push
+✓ Created repository Adityaporwal18/devops-lab4 on GitHub
+  https://github.com/Adityaporwal18/devops-lab4
+✓ Added remote https://github.com/Adityaporwal18/devops-lab4.git
+Enumerating objects: 36, done.
+Counting objects: 100% (36/36), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (31/31), done.
+Writing objects: 100% (36/36), 5.84 KiB | 284.00 KiB/s, done.
+Total 36 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), done.
+To https://github.com/Adityaporwal18/devops-lab4.git
+ * [new branch]      HEAD -> main
+branch 'main' set up to track 'origin/main'.
+✓ Pushed commits to https://github.com/Adityaporwal18/devops-lab4.git
+aditya@lima-devops:~/devops-lab4$ git log --oneline
+45552cb (HEAD -> main, origin/main) Initial Lab 4 project: application, tests, pipeline and deployment files
+aditya@lima-devops:~/devops-lab4$ git remote -v
+origin  https://github.com/Adityaporwal18/devops-lab4.git (fetch)
+origin  https://github.com/Adityaporwal18/devops-lab4.git (push)
+aditya@lima-devops:~/devops-lab4$ 

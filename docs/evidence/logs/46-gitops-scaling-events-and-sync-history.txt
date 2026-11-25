@@ -1,0 +1,10 @@
+aditya@lima-devops:~/devops-lab4$ kubectl get events --field-selector involvedObject.name=gitops-demo --sort-by=.lastTimestamp | tail -n 8
+LAST SEEN   TYPE     REASON              OBJECT                   MESSAGE
+6m17s       Normal   ScalingReplicaSet   deployment/gitops-demo   Scaled up replica set gitops-demo-64b6bdb7f4 from 0 to 2
+104s        Normal   ScalingReplicaSet   deployment/gitops-demo   Scaled up replica set gitops-demo-64b6bdb7f4 from 2 to 3
+32s         Normal   ScalingReplicaSet   deployment/gitops-demo   Scaled down replica set gitops-demo-64b6bdb7f4 from 3 to 1
+26s         Normal   ScalingReplicaSet   deployment/gitops-demo   Scaled up replica set gitops-demo-64b6bdb7f4 from 1 to 3
+aditya@lima-devops:~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{range .status.history[*]}{.id}{"  "}{.revision}{"  "}{.deployedAt}{"\n"}{end}'
+0  c209fb0b51681b6e4c2f035dd3deb1b940a311d6  2026-11-25T09:08:19Z
+1  de1a448e91cfccc238b7a02c387404ab924251b5  2026-11-25T09:12:52Z
+aditya@lima-devops:~/devops-lab4$ 

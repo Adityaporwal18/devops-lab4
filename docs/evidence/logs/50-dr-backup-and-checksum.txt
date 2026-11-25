@@ -1,0 +1,8 @@
+aditya@lima-devops:~/devops-lab4$ mkdir -p disaster-recovery/backups
+aditya@lima-devops:~/devops-lab4$ kubectl cp lab4-dr-pod:/data/record.txt disaster-recovery/backups/record.txt
+tar: removing leading '/' from member names
+aditya@lima-devops:~/devops-lab4$ cat disaster-recovery/backups/record.txt
+Lab 4 disaster recovery test record written at 2026-11-25T09:15:44+00:00
+aditya@lima-devops:~/devops-lab4$ sha256sum disaster-recovery/backups/record.txt
+ca01ee6017f5defd6ea21a1b6a37ac870da7f068202132a604b7f8ede4af9305  disaster-recovery/backups/record.txt
+aditya@lima-devops:~/devops-lab4$ 

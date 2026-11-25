@@ -1,0 +1,33 @@
+aditya@lima-devops:~/devops-lab4$ (sleep 3; scripts/switch-bluegreen.sh blue > /tmp/switch-to-blue.log 2>&1) &
+[1] 34370
+aditya@lima-devops:~/devops-lab4$ scripts/request-stream.sh http://localhost:8086/ 28 0.25
+14:20:53.621  request 01  HTTP 200  version v2
+14:20:53.895  request 02  HTTP 200  version v2
+14:20:54.161  request 03  HTTP 200  version v2
+14:20:54.444  request 04  HTTP 200  version v2
+14:20:54.716  request 05  HTTP 200  version v2
+14:20:54.980  request 06  HTTP 200  version v2
+14:20:55.487  request 07  HTTP 200  version v2
+14:20:55.766  request 08  HTTP 200  version v2
+14:20:56.038  request 09  HTTP 200  version v1
+14:20:56.305  request 10  HTTP 200  version v1
+14:20:56.567  request 11  HTTP 200  version v1
+14:20:57.012  request 12  HTTP 200  version v1
+14:20:57.304  request 13  HTTP 200  version v1
+14:20:57.576  request 14  HTTP 200  version v1
+14:20:57.842  request 15  HTTP 200  version v1
+14:20:58.103  request 16  HTTP 200  version v1
+14:20:58.370  request 17  HTTP 200  version v1
+14:20:58.658  request 18  HTTP 200  version v1
+14:20:58.937  request 19  HTTP 200  version v1
+14:20:59.219  request 20  HTTP 200  version v1
+14:20:59.500  request 21  HTTP 200  version v1
+14:20:59.801  request 22  HTTP 200  version v1
+14:21:00.063  request 23  HTTP 200  version v1
+14:21:00.346  request 24  HTTP 200  version v1
+14:21:00.624  request 25  HTTP 200  version v1
+14:21:00.918  request 26  HTTP 200  version v1
+14:21:01.203  request 27  HTTP 200  version v1
+14:21:01.475  request 28  HTTP 200  version v1
+[1]+  Done                    ( sleep 3; scripts/switch-bluegreen.sh blue > /tmp/switch-to-blue.log 2>&1 )
+aditya@lima-devops:~/devops-lab4$ 

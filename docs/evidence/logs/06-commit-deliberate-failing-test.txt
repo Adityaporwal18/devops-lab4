@@ -1,0 +1,18 @@
+aditya@lima-devops:~/devops-lab4$ git diff -U0 tests/test_unit.py | tail -n 3
+@@ -4 +4 @@ def test_add_positive_numbers():
+-    assert add(2, 3) == 5
++    assert add(2, 3) == 999
+aditya@lima-devops:~/devops-lab4$ git commit -q -am "Introduce a deliberately failing assertion to test the deployment gate"
+aditya@lima-devops:~/devops-lab4$ git push
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 416 bytes | 416.00 KiB/s, done.
+Total 4 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/Adityaporwal18/devops-lab4.git
+   45552cb..3feba7a  main -> main
+aditya@lima-devops:~/devops-lab4$ date
+Wed Nov 25 14:12:11 IST 2026
+aditya@lima-devops:~/devops-lab4$ 

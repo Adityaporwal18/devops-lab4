@@ -1,0 +1,7 @@
+aditya@lima-devops:~/devops-lab4$ kubectl port-forward svc/argocd-server -n argocd 8443:443 > /tmp/argocd-port-forward.log 2>&1 &
+[1] 41405
+aditya@lima-devops:~/devops-lab4$ curl -k -s -o /dev/null -w 'Argo CD UI: HTTP %{http_code}\n' https://localhost:8443/
+Argo CD UI: HTTP 200
+aditya@lima-devops:~/devops-lab4$ kubectl get applications -n argocd
+No resources found in argocd namespace.
+aditya@lima-devops:~/devops-lab4$ 

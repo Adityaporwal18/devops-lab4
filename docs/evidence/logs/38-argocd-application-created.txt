@@ -1,0 +1,32 @@
+aditya@lima-devops:~/devops-lab4$ cat gitops/application.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Adityaporwal18/devops-lab4.git
+    targetRevision: main
+    path: gitops/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+aditya@lima-devops:~/devops-lab4$ cat gitops/manifests/deployment.yaml | head -n 8
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitops-demo
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+aditya@lima-devops:~/devops-lab4$ kubectl apply -f gitops/application.yaml
+application.argoproj.io/gitops-demo created
+aditya@lima-devops:~/devops-lab4$ until [ "$(kubectl get application gitops-demo -n argocd -o jsonpath='{.status.health.status}')" = "Healthy" ]; do sleep 3; done
+kubectl get application gitops-demo -n argocd
