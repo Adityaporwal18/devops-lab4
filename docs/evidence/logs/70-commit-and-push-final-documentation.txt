@@ -1,0 +1,19 @@
+aditya@lima-devops:~/devops-lab4$ git status --short | wc -l
+20
+aditya@lima-devops:~/devops-lab4$ git add -A
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Reorder report and evidence to the portal's question numbers; add canary trigger results and risk analysis"
+aditya@lima-devops:~/devops-lab4$ git push
+Enumerating objects: 35, done.
+Counting objects: 100% (35/35), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (26/26), done.
+Writing objects: 100% (26/26), 2.03 MiB | 3.49 MiB/s, done.
+Total 26 (delta 8), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (8/8), completed with 7 local objects.
+To https://github.com/Adityaporwal18/devops-lab4.git
+   1216dfb..021ad3c  main -> main
+aditya@lima-devops:~/devops-lab4$ git log --oneline -n 3
+021ad3c (HEAD -> main, origin/main) Reorder report and evidence to the portal's question numbers; add canary trigger results and risk analysis
+1216dfb Define canary rollback triggers; add canary check script and a fault switch for testing
+2e49113 Add final repository screenshots
+aditya@lima-devops:~/devops-lab4$ 

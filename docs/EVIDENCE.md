@@ -14,9 +14,9 @@ Evidence is grouped by the question numbers of the assignment portal. The number
 | [Q2 - Automated testing and deployment gates](#q2---automated-testing-and-deployment-gates) | E11-E22 |
 | [Q3 - Blue-Green deployment](#q3---blue-green-deployment) | E23-E31 |
 | [Q4 - GitOps using Argo CD](#q4---gitops-using-argo-cd) | E32-E45 |
-| [Q5 - Advanced deployment strategies report](#q5---advanced-deployment-strategies-report) | E46-E50 |
-| [Q6 - Secure secret management](#q6---secure-secret-management) | E51-E56 |
-| [Q7 - Canary deployment, rollout metrics and rollback triggers](#q7---canary-deployment-rollout-metrics-and-rollback-triggers) | E57-E68 |
+| [Q5 - Advanced deployment strategies report](#q5---advanced-deployment-strategies-report) | E46-E52 |
+| [Q6 - Secure secret management](#q6---secure-secret-management) | E53-E58 |
+| [Q7 - Canary deployment, rollout metrics and rollback triggers](#q7---canary-deployment-rollout-metrics-and-rollback-triggers) | E59-E70 |
 
 ## Q1 - Disaster recovery and failover
 
@@ -402,146 +402,160 @@ Job page with builds #1 to #8. Build #8 tested the commit that added the fault s
 
 ![E50 Jenkins build history after the canary change](evidence/screenshots/69-jenkins-build-history-after-canary-change.png)
 
+### E51 - Commit and push the final documentation
+
+The report in the portal's question order, the regenerated evidence gallery and the command record are committed and pushed.
+
+![E51 Commit and push the final documentation](evidence/screenshots/70-commit-and-push-final-documentation.png)
+
+Source: [Terminal log](evidence/logs/70-commit-and-push-final-documentation.txt)
+
+### E52 - Repository on GitHub after the final documentation push
+
+The repository on GitHub after that push. The per-question PDF files in `docs/submission` were added in the commit that followed.
+
+![E52 Repository on GitHub after the final documentation push](evidence/screenshots/71-github-final-repository.png)
+
 ## Q6 - Secure secret management
 
-### E51 - Jenkins credential
+### E53 - Jenkins credential
 
 The Jenkins credential store contains a *Secret text* credential with ID `lab4-api-key`. Jenkins does not display its value. The value is a randomly generated demo string that is not stored in this repository.
 
-![E51 Jenkins credential](evidence/screenshots/28-jenkins-credential-registered.png)
+![E53 Jenkins credential](evidence/screenshots/28-jenkins-credential-registered.png)
 
-### E52 - Add the secret stage to the pipeline
+### E54 - Add the secret stage to the pipeline
 
 A stage **Secure Secret Management** is added to the Jenkinsfile. It loads the credential with `withCredentials` and, on purpose, tries to print it. The change is committed (`c209fb0`) and pushed at 14:27:07 IST.
 
-![E52 Add the secret stage to the pipeline](evidence/screenshots/29-commit-secret-stage.png)
+![E54 Add the secret stage to the pipeline](evidence/screenshots/29-commit-secret-stage.png)
 
 Source: [Terminal log](evidence/logs/29-commit-secret-stage.txt)
 
-### E53 - Build #4 - secret is masked
+### E55 - Build #4 - secret is masked
 
 Console of build #4: `Masking supported pattern matches of $API_KEY`, the secret has 29 characters, and the line that prints the secret shows `****` instead of the value.
 
-![E53 Build #4 - secret is masked](evidence/screenshots/30-jenkins-build-4-secret-masked.png)
+![E55 Build #4 - secret is masked](evidence/screenshots/30-jenkins-build-4-secret-masked.png)
 
 Source: [Full console log](evidence/logs/jenkins-build-4-console.txt)
 
-### E54 - Build #4 pipeline stages
+### E56 - Build #4 pipeline stages
 
 Stage view of build #4 including the Secure Secret Management stage; all stages succeeded.
 
-![E54 Build #4 pipeline stages](evidence/screenshots/31-jenkins-build-4-pipeline-stages.png)
+![E56 Build #4 pipeline stages](evidence/screenshots/31-jenkins-build-4-pipeline-stages.png)
 
-### E55 - Create a Kubernetes Secret
+### E57 - Create a Kubernetes Secret
 
 A Secret `lab4-app-secret` is created from a random value generated on the command line. `kubectl describe` shows only the key name and size (32 bytes). The Pod manifest reads the key through `secretKeyRef`.
 
-![E55 Create a Kubernetes Secret](evidence/screenshots/32-kubernetes-secret-created.png)
+![E57 Create a Kubernetes Secret](evidence/screenshots/32-kubernetes-secret-created.png)
 
 Source: [Terminal log](evidence/logs/32-kubernetes-secret-created.txt)
 
-### E56 - Secret injected into a Pod
+### E58 - Secret injected into a Pod
 
 The Pod `lab4-secret-demo` becomes Ready and logs `Kubernetes Secret injected successfully`. Inside the container the variable has 32 characters; the value itself is never printed.
 
-![E56 Secret injected into a Pod](evidence/screenshots/33-kubernetes-secret-injected.png)
+![E58 Secret injected into a Pod](evidence/screenshots/33-kubernetes-secret-injected.png)
 
 Source: [Terminal log](evidence/logs/33-kubernetes-secret-injected.txt)
 
 ## Q7 - Canary deployment, rollout metrics and rollback triggers
 
-### E57 - Start the canary stack
+### E59 - Start the canary stack
 
 The canary configuration gives Blue weight 9 and Green weight 1. The stack starts with nginx on `127.0.0.1:8087`.
 
-![E57 Start the canary stack](evidence/screenshots/23-canary-services-start.png)
+![E59 Start the canary stack](evidence/screenshots/23-canary-services-start.png)
 
 Source: [Terminal log](evidence/logs/23-canary-services-start.txt)
 
-### E58 - 90 / 10 measured
+### E60 - 90 / 10 measured
 
 The counting script is shown and run with 100 requests: **v1: 90, v2: 10, errors: 0**, average response time 4.5 ms.
 
-![E58 90 / 10 measured](evidence/screenshots/24-canary-90-10-measured.png)
+![E60 90 / 10 measured](evidence/screenshots/24-canary-90-10-measured.png)
 
 Source: [Terminal log](evidence/logs/24-canary-90-10-measured.txt)
 
-### E59 - 70 / 30 measured
+### E61 - 70 / 30 measured
 
 `set-canary-weights.sh 7 3` rewrites the upstream, tests and reloads nginx. The configuration inside the container shows weights 7 and 3, and 100 requests give **v1: 70, v2: 30, errors: 0**, average 5.3 ms.
 
-![E59 70 / 30 measured](evidence/screenshots/25-canary-70-30-measured.png)
+![E61 70 / 30 measured](evidence/screenshots/25-canary-70-30-measured.png)
 
 Source: [Terminal log](evidence/logs/25-canary-70-30-measured.txt)
 
-### E60 - Rollback: all traffic to v1
+### E62 - Rollback: all traffic to v1
 
 `set-canary-weights.sh 1 0` removes Green from the upstream. 100 requests give **v1: 100, v2: 0, errors: 0**, average 8.5 ms.
 
-![E60 Rollback: all traffic to v1](evidence/screenshots/26-canary-rollback-all-v1.png)
+![E62 Rollback: all traffic to v1](evidence/screenshots/26-canary-rollback-all-v1.png)
 
 Source: [Terminal log](evidence/logs/26-canary-rollback-all-v1.txt)
 
-### E61 - Stop the canary stack
+### E63 - Stop the canary stack
 
 The canary stack is removed and the rolled-back configuration is committed (`5c3f40d`).
 
-![E61 Stop the canary stack](evidence/screenshots/27-canary-stopped-and-committed.png)
+![E63 Stop the canary stack](evidence/screenshots/27-canary-stopped-and-committed.png)
 
 Source: [Terminal log](evidence/logs/27-canary-stopped-and-committed.txt)
 
-### E62 - Rollback triggers defined first
+### E64 - Rollback triggers defined first
 
 The application gets a fault switch (`SIMULATE_FAILURE`, off by default) and the six tests still pass. `canary/ROLLBACK-TRIGGERS.md` defines the triggers: error rate above 1% or average response time above 200 ms over 100 requests. The file is committed (`1216dfb`) before the trigger test.
 
-![E62 Rollback triggers defined first](evidence/screenshots/62-canary-rollback-triggers-defined.png)
+![E64 Rollback triggers defined first](evidence/screenshots/62-canary-rollback-triggers-defined.png)
 
 Source: [Terminal log](evidence/logs/62-canary-rollback-triggers-defined.txt)
 
-### E63 - Canary check script
+### E65 - Canary check script
 
 `scripts/canary-check.sh` sends 100 requests, counts versions and failed responses, computes the error rate and average response time, compares them with the triggers and, if one is breached, sets the weights to v1 = 1, v2 = 0.
 
-![E63 Canary check script](evidence/screenshots/63-canary-check-script.png)
+![E65 Canary check script](evidence/screenshots/63-canary-check-script.png)
 
 Source: [Terminal log](evidence/logs/63-canary-check-script.txt)
 
-### E64 - Healthy canary at 10%
+### E66 - Healthy canary at 10%
 
 The stack is rebuilt and the weights set to 9 : 1. The check measures v1: 90, v2: 10, error rate 0.0%, average 2.4 ms. **DECISION: CONTINUE**.
 
-![E64 Healthy canary at 10%](evidence/screenshots/64-canary-10-percent-healthy-continue.png)
+![E66 Healthy canary at 10%](evidence/screenshots/64-canary-10-percent-healthy-continue.png)
 
 Source: [Terminal log](evidence/logs/64-canary-10-percent-healthy-continue.txt)
 
-### E65 - Healthy canary at 30%
+### E67 - Healthy canary at 30%
 
 Weights 7 : 3. The check measures v1: 70, v2: 30, error rate 0.0%, average 2.4 ms. **DECISION: CONTINUE**.
 
-![E65 Healthy canary at 30%](evidence/screenshots/65-canary-30-percent-healthy-continue.png)
+![E67 Healthy canary at 30%](evidence/screenshots/65-canary-30-percent-healthy-continue.png)
 
 Source: [Terminal log](evidence/logs/65-canary-30-percent-healthy-continue.txt)
 
-### E66 - Faulty release: the trigger rolls back
+### E68 - Faulty release: the trigger rolls back
 
 Green is redeployed with `SIMULATE_FAILURE=true` and put back at 10%. The check measures 10 failed requests of 100, an error rate of **10.0%** against a trigger of 1%. **DECISION: ROLLBACK**, and the script itself sets the weights to v1 = 1, v2 = 0 (exit code 1). The response-time trigger is not breached (2.0 ms).
 
-![E66 Faulty release: the trigger rolls back](evidence/screenshots/66-canary-faulty-release-trigger-rollback.png)
+![E68 Faulty release: the trigger rolls back](evidence/screenshots/66-canary-faulty-release-trigger-rollback.png)
 
 Source: [Terminal log](evidence/logs/66-canary-faulty-release-trigger-rollback.txt)
 
-### E67 - After the automatic rollback
+### E69 - After the automatic rollback
 
 The configuration inside the running nginx container contains only `blue`. A new check measures v1: 100, v2: 0 and an error rate of 0.0%.
 
-![E67 After the automatic rollback](evidence/screenshots/67-canary-after-automatic-rollback.png)
+![E69 After the automatic rollback](evidence/screenshots/67-canary-after-automatic-rollback.png)
 
 Source: [Terminal log](evidence/logs/67-canary-after-automatic-rollback.txt)
 
-### E68 - Stop the canary stack and push
+### E70 - Stop the canary stack and push
 
 The canary stack is removed and the commit is pushed to GitHub at 15:52:55 IST.
 
-![E68 Stop the canary stack and push](evidence/screenshots/68-canary-stopped-and-pushed.png)
+![E70 Stop the canary stack and push](evidence/screenshots/68-canary-stopped-and-pushed.png)
 
 Source: [Terminal log](evidence/logs/68-canary-stopped-and-pushed.txt)

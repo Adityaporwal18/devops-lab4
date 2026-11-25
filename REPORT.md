@@ -224,7 +224,7 @@ Evidence: [Q7 in the gallery](docs/EVIDENCE.md#q7---canary-deployment-rollout-me
 
 ## Q5 - Advanced deployment strategies report
 
-This section compares the approaches using the results above.
+This section compares the approaches using the measured results of the other six questions.
 
 ### Comparison
 

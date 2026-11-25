@@ -242,28 +242,35 @@ Q5 - ADVANCED DEPLOYMENT STRATEGIES REPORT
   ~/devops-lab4$ git push
   ~/devops-lab4$ git log --oneline -n 4
 
+[E51] Commit and push the final documentation
+  ~/devops-lab4$ git status --short | wc -l
+  ~/devops-lab4$ git add -A
+  ~/devops-lab4$ git commit -q -m "Reorder report and evidence to the portal's question numbers; add canary trigger results and risk analysis"
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ git log --oneline -n 3
+
 Q6 - SECURE SECRET MANAGEMENT
 -----------------------------
 
-[E51] Jenkins credential
+[E53] Jenkins credential
   Jenkins REST API: created a Secret text credential with ID lab4-api-key (random demo value, not recorded)
 
-[E52] Add the secret stage to the pipeline
+[E54] Add the secret stage to the pipeline
   ~/devops-lab4$ git diff -U0 Jenkinsfile | tail -n 13
   ~/devops-lab4$ git commit -q -am "Add Secure Secret Management stage using a Jenkins credential"
   ~/devops-lab4$ git push
   ~/devops-lab4$ date
 
-[E52] Add the secret stage to the pipeline
+[E54] Add the secret stage to the pipeline
   Editor: added the Secure Secret Management stage to the Jenkinsfile
 
-[E55] Create a Kubernetes Secret
+[E57] Create a Kubernetes Secret
   ~/devops-lab4$ kubectl get nodes
   ~/devops-lab4$ kubectl create secret generic lab4-app-secret --from-literal=API_KEY="$(openssl rand -hex 16)"
   ~/devops-lab4$ kubectl describe secret lab4-app-secret
   ~/devops-lab4$ cat secrets/secret-demo-pod.yaml
 
-[E56] Secret injected into a Pod
+[E58] Secret injected into a Pod
   ~/devops-lab4$ kubectl apply -f secrets/secret-demo-pod.yaml
   ~/devops-lab4$ kubectl wait --for=condition=Ready pod/lab4-secret-demo --timeout=180s
   ~/devops-lab4$ kubectl logs lab4-secret-demo
@@ -273,7 +280,7 @@ Q6 - SECURE SECRET MANAGEMENT
 Q7 - CANARY DEPLOYMENT, ROLLOUT METRICS AND ROLLBACK TRIGGERS
 -------------------------------------------------------------
 
-[E57] Start the canary stack
+[E59] Start the canary stack
   ~/devops-lab4$ git add -A
   ~/devops-lab4$ git commit -q -m "Add canary, failover and restore scripts and recovery targets"
   ~/devops-lab4$ cat canary/conf.d/app.conf
@@ -281,28 +288,28 @@ Q7 - CANARY DEPLOYMENT, ROLLOUT METRICS AND ROLLBACK TRIGGERS
   ~/devops-lab4$ docker compose -f canary/compose.yaml ps
   ~/devops-lab4$ curl -s http://localhost:8087/
 
-[E58] 90 / 10 measured
+[E60] 90 / 10 measured
   ~/devops-lab4$ cat scripts/count-versions.sh
   ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
 
-[E59] 70 / 30 measured
+[E61] 70 / 30 measured
   ~/devops-lab4$ cat scripts/set-canary-weights.sh
   ~/devops-lab4$ scripts/set-canary-weights.sh 7 3
   ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
   ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
 
-[E60] Rollback: all traffic to v1
+[E62] Rollback: all traffic to v1
   ~/devops-lab4$ scripts/set-canary-weights.sh 1 0
   ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
   ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
 
-[E61] Stop the canary stack
+[E63] Stop the canary stack
   ~/devops-lab4$ docker compose -f canary/compose.yaml down
   ~/devops-lab4$ git add -A
   ~/devops-lab4$ git commit -q -m "Canary rolled back: all traffic to v1"
   ~/devops-lab4$ git log --oneline -n 3
 
-[E62] Rollback triggers defined first
+[E64] Rollback triggers defined first
   ~/devops-lab3$ cd ~/devops-lab4
   ~/devops-lab4$ git diff -U0 app.py | tail -n 7
   ~/devops-lab4$ .venv/bin/python -m pytest -q
@@ -311,32 +318,32 @@ Q7 - CANARY DEPLOYMENT, ROLLOUT METRICS AND ROLLBACK TRIGGERS
   ~/devops-lab4$ git commit -q -m "Define canary rollback triggers; add canary check script and a fault switch for testing"
   ~/devops-lab4$ git log --oneline -n 1 -- canary/ROLLBACK-TRIGGERS.md
 
-[E62] Rollback triggers defined first
+[E64] Rollback triggers defined first
   Editor: added the SIMULATE_FAILURE switch to app.py, canary/ROLLBACK-TRIGGERS.md and scripts/canary-check.sh
 
-[E63] Canary check script
+[E65] Canary check script
   ~/devops-lab4$ cat scripts/canary-check.sh
 
-[E64] Healthy canary at 10%
+[E66] Healthy canary at 10%
   ~/devops-lab4$ docker compose -f canary/compose.yaml up -d --build --quiet-pull
   ~/devops-lab4$ scripts/set-canary-weights.sh 9 1
   ~/devops-lab4$ scripts/canary-check.sh
 
-[E65] Healthy canary at 30%
+[E67] Healthy canary at 30%
   ~/devops-lab4$ scripts/set-canary-weights.sh 7 3
   ~/devops-lab4$ scripts/canary-check.sh
 
-[E66] Faulty release: the trigger rolls back
+[E68] Faulty release: the trigger rolls back
   ~/devops-lab4$ GREEN_SIMULATE_FAILURE=true docker compose -f canary/compose.yaml up -d green
   ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T green printenv SIMULATE_FAILURE
   ~/devops-lab4$ scripts/set-canary-weights.sh 9 1
   ~/devops-lab4$ scripts/canary-check.sh; echo "exit code: $?"
 
-[E67] After the automatic rollback
+[E69] After the automatic rollback
   ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf | head -n 3
   ~/devops-lab4$ scripts/canary-check.sh
 
-[E68] Stop the canary stack and push
+[E70] Stop the canary stack and push
   ~/devops-lab4$ docker compose -f canary/compose.yaml down
   ~/devops-lab4$ git status --short
   ~/devops-lab4$ git push
