@@ -8,6 +8,12 @@ def add(a, b):
 
 @app.route("/")
 def home():
+    if os.getenv("SIMULATE_FAILURE", "false").lower() == "true":
+        return jsonify(
+            application="DevOps Lab 4",
+            version=os.getenv("APP_VERSION", "v1"),
+            status="error"
+        ), 500
     return jsonify(
         application="DevOps Lab 4",
         version=os.getenv("APP_VERSION", "v1"),

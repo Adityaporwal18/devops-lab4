@@ -10,6 +10,7 @@ services:
       context: ..
     environment:
       APP_VERSION: v2
+      SIMULATE_FAILURE: ${GREEN_SIMULATE_FAILURE:-false}
 
   nginx:
     image: nginx:alpine
