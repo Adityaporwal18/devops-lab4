@@ -1,0 +1,20 @@
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml down
+[+] down 4/4
+ ✔ Container canary-nginx-1 Removed                                                                                        0.3s
+ ✔ Container canary-blue-1  Removed                                                                                       10.4s
+ ✔ Container canary-green-1 Removed                                                                                       10.4s
+ ✔ Network canary_default   Removed                                                                                        0.1s
+aditya@lima-devops:~/devops-lab4$ git status --short
+aditya@lima-devops:~/devops-lab4$ git push
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 1.94 KiB | 994.00 KiB/s, done.
+Total 8 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To https://github.com/Adityaporwal18/devops-lab4.git
+   2e49113..1216dfb  main -> main
+aditya@lima-devops:~/devops-lab4$ date
+Wed Nov 25 15:52:55 IST 2026
+aditya@lima-devops:~/devops-lab4$ 

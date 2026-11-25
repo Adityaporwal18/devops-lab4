@@ -1,0 +1,10 @@
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf | head -n 3
+upstream application {
+    server blue:5004 weight=1;
+}
+aditya@lima-devops:~/devops-lab4$ scripts/canary-check.sh
+requests: 100 | answered by v1: 100 | answered by v2: 0
+HTTP 200: 100 | failed: 0 | error rate: 0.0% (trigger: more than 1%)
+average response time: 1.8 ms (trigger: more than 200 ms)
+DECISION: CONTINUE - no rollback trigger breached
+aditya@lima-devops:~/devops-lab4$ 

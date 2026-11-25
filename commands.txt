@@ -6,235 +6,20 @@ Date: 25 November 2026.
 
 Every command listed under a terminal evidence item was extracted from that item's terminal
 log (docs/evidence/logs/), so the commands appear exactly as they were run.
-Items are grouped by lab question; the number at the start of each log/screenshot file name
+Items are grouped by the question numbers of the assignment portal; the number at the start of each log/screenshot file name
 gives the real chronological order. The text before '$' is the working directory.
 Steps done in a browser, in an editor or through the Jenkins REST API are described in words.
 Evidence IDs (E01...) match docs/EVIDENCE.md.
 
 
-Q1 - AUTOMATED TESTING AND DEPLOYMENT GATES
--------------------------------------------
-
-[E01] Local tests pass
-  ~/devops-lab2$ cd ~/devops-lab4
-  ~/devops-lab4$ ls
-  ~/devops-lab4$ python3 -m venv .venv
-  ~/devops-lab4$ .venv/bin/python -m pip install -q -r requirements.txt
-  ~/devops-lab4$ .venv/bin/python -m pytest -v
-
-[E01] Local tests pass
-  Editor: prepared the project files in ~/devops-lab4 (application, tests, Jenkinsfile, compose files, manifests, scripts)
-
-[E02] Create the GitHub repository and push
-  ~/devops-lab4$ git init
-  ~/devops-lab4$ git add -A
-  ~/devops-lab4$ git commit -q -m "Initial Lab 4 project: application, tests, pipeline and deployment files"
-  ~/devops-lab4$ gh repo create devops-lab4 --public --source=. --remote=origin --push
-  ~/devops-lab4$ git log --oneline
-  ~/devops-lab4$ git remote -v
-
-[E03] Build #1 console - start
-  Jenkins REST API (signed in as the Jenkins user aditya; credentials not recorded):
-    curl -X POST 'http://localhost:8080/createItem?name=devops-lab4' \
-         -H 'Content-Type: application/xml' --data-binary @jenkins/job-config.xml
-    curl -X POST http://localhost:8080/job/devops-lab4/build      # build #1, same as "Build Now"
-
-[E06] Commit a deliberately failing test
-  ~/devops-lab4$ git diff -U0 tests/test_unit.py | tail -n 3
-  ~/devops-lab4$ git commit -q -am "Introduce a deliberately failing assertion to test the deployment gate"
-  ~/devops-lab4$ git push
-  ~/devops-lab4$ date
-
-[E06] Commit a deliberately failing test
-  Editor: changed the assertion in tests/test_unit.py from 5 to 999
-
-[E10] Restore the correct assertion
-  ~/devops-lab4$ git diff -U0 tests/test_unit.py | tail -n 3
-  ~/devops-lab4$ git commit -q -am "Restore the correct assertion"
-  ~/devops-lab4$ git push
-  ~/devops-lab4$ date
-
-[E10] Restore the correct assertion
-  Editor: changed the assertion in tests/test_unit.py back to 5
-
-Q2 - BLUE-GREEN DEPLOYMENT
---------------------------
-
-[E13] Start Blue, Green and nginx
-  ~/devops-lab4$ cat bluegreen/conf.d/app.conf
-  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml up -d --build --quiet-pull
-  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml ps
-  ~/devops-lab4$ curl -s http://localhost:8086/
-
-[E14] Both versions are running
-  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T blue python -c "import urllib.request; print('blue :', urllib.request.urlopen('http://localhost:5004/').read().decode().strip())"
-  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T green python -c "import urllib.request; print('green:', urllib.request.urlopen('http://localhost:5004/').read().decode().strip())"
-  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T green python -c "import urllib.request; print('green health:', urllib.request.urlopen('http://localhost:5004/health').read().decode().strip())"
-  ~/devops-lab4$ curl -s http://localhost:8086/
-
-[E15] First switch attempt did not take effect
-  ~/devops-lab4$ cat /tmp/switch-to-green.log
-  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
-  ~/devops-lab4$ curl -s http://localhost:8086/
-  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
-
-[E16] Diagnosis: the background job was stopped
-  ~/devops-lab4$ jobs -l
-  ~/devops-lab4$ cat /tmp/switch-to-green.log | wc -c
-
-[E17] Switch to Green under load
-  ~/devops-lab4$ git diff -U0 scripts/switch-bluegreen.sh | tail -n 4
-  ~/devops-lab4$ curl -s http://localhost:8086/
-  ~/devops-lab4$ (sleep 3; scripts/switch-bluegreen.sh green > /tmp/switch-to-green.log 2>&1) &
-  ~/devops-lab4$ scripts/request-stream.sh http://localhost:8086/ 28 0.25
-
-[E18] Green is live
-  ~/devops-lab4$ cat /tmp/switch-to-green.log
-  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
-  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
-
-[E19] Version v2 in the browser
-  Browser: opened http://localhost:8086/
-
-[E20] Rollback to Blue under load
-  ~/devops-lab4$ (sleep 3; scripts/switch-bluegreen.sh blue > /tmp/switch-to-blue.log 2>&1) &
-  ~/devops-lab4$ scripts/request-stream.sh http://localhost:8086/ 28 0.25
-
-[E21] Blue is live again
-  ~/devops-lab4$ cat /tmp/switch-to-blue.log
-  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
-  ~/devops-lab4$ git add scripts/switch-bluegreen.sh
-  ~/devops-lab4$ git commit -q -m "Fix switch script: do not read from the terminal when run in the background"
-
-Q3 - CANARY DEPLOYMENT AND ROLLBACK
+Q1 - DISASTER RECOVERY AND FAILOVER
 -----------------------------------
 
-[E22] Start the canary stack
-  ~/devops-lab4$ git add -A
-  ~/devops-lab4$ git commit -q -m "Add canary, failover and restore scripts and recovery targets"
-  ~/devops-lab4$ cat canary/conf.d/app.conf
-  ~/devops-lab4$ docker compose -f canary/compose.yaml up -d --build --quiet-pull
-  ~/devops-lab4$ docker compose -f canary/compose.yaml ps
-  ~/devops-lab4$ curl -s http://localhost:8087/
-
-[E23] 90 / 10 measured
-  ~/devops-lab4$ cat scripts/count-versions.sh
-  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
-
-[E24] 70 / 30 measured
-  ~/devops-lab4$ cat scripts/set-canary-weights.sh
-  ~/devops-lab4$ scripts/set-canary-weights.sh 7 3
-  ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
-  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
-
-[E25] Rollback: all traffic to v1
-  ~/devops-lab4$ scripts/set-canary-weights.sh 1 0
-  ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
-  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
-
-[E26] Stop the canary stack
-  ~/devops-lab4$ docker compose -f canary/compose.yaml down
-  ~/devops-lab4$ git add -A
-  ~/devops-lab4$ git commit -q -m "Canary rolled back: all traffic to v1"
-  ~/devops-lab4$ git log --oneline -n 3
-
-Q4 - GITOPS USING ARGO CD
--------------------------
-
-[E27] Install Argo CD
-  ~/devops-lab4$ git push
-  ~/devops-lab4$ kubectl create namespace argocd
-  ~/devops-lab4$ kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml | tail -n 6
-  ~/devops-lab4$ kubectl wait --for=condition=Available deployment --all -n argocd --timeout=900s
-  ~/devops-lab4$ kubectl get pods -n argocd
-
-[E28] Expose the Argo CD UI
-  ~/devops-lab4$ kubectl port-forward svc/argocd-server -n argocd 8443:443 > /tmp/argocd-port-forward.log 2>&1 &
-  ~/devops-lab4$ curl -k -s -o /dev/null -w 'Argo CD UI: HTTP %{http_code}\n' https://localhost:8443/
-  ~/devops-lab4$ kubectl get applications -n argocd
-
-[E29] Argo CD login page
-  Browser: opened https://localhost:8443 and signed in as admin (initial password read from the
-           argocd-initial-admin-secret; value not recorded)
-
-[E31] Create the Argo CD application
-  ~/devops-lab4$ cat gitops/application.yaml
-  ~/devops-lab4$ cat gitops/manifests/deployment.yaml | head -n 8
-  ~/devops-lab4$ kubectl apply -f gitops/application.yaml
-  ~/devops-lab4$ until [ "$(kubectl get application gitops-demo -n argocd -o jsonpath='{.status.health.status}')" = "Healthy" ]; do sleep 3; done
-
-[E32] Argo CD deployed two replicas
-  ~/devops-lab4$ kubectl get deployment gitops-demo
-  ~/devops-lab4$ kubectl get pods -l app=gitops-demo
-  ~/devops-lab4$ kubectl get service gitops-demo
-  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.spec.syncPolicy}'; echo
-
-[E35] Change the desired state in Git
-  ~/devops-lab4$ kubectl get application gitops-demo -n argocd
-  ~/devops-lab4$ git diff -U0 gitops/manifests/deployment.yaml | tail -n 3
-  ~/devops-lab4$ git commit -q -am "Scale gitops-demo to 3 replicas (desired state in Git)"
-  ~/devops-lab4$ git push
-  ~/devops-lab4$ date
-  ~/devops-lab4$ kubectl get deployment gitops-demo
-
-[E35] Change the desired state in Git
-  Editor: changed replicas from 2 to 3 in gitops/manifests/deployment.yaml
-
-[E36] Argo CD applies the commit
-  ~/devops-lab4$ kubectl wait --for=jsonpath='{.status.readyReplicas}'=3 deployment/gitops-demo --timeout=420sdeployment.apps/gitops-demo condition met
-  ~/devops-lab4$ date
-  ~/devops-lab4$ kubectl get deployment gitops-demo
-  ~/devops-lab4$ kubectl get pods -l app=gitops-demo
-  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.status.sync.status} {.status.health.status} revision={.status.sync.revision}'; echo
-  ~/devops-lab4$ git rev-parse HEAD
-
-[E38] Self-heal after a manual change
-  ~/devops-lab4$ kubectl get deployment gitops-demo --no-headers
-  ~/devops-lab4$ kubectl scale deployment gitops-demo --replicas=1; for i in 1 2 3 4 5 6 7 8 9 10; do echo "$(date +%T)  $(kubectl get deployment gitops-demo --no-headers)"; sleep 2; done
-  ~/devops-lab4$ kubectl get pods -l app=gitops-demo
-  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.status.sync.status} {.status.health.status}'; echo
-  ~/devops-lab4$ grep -n replicas gitops/manifests/deployment.yaml
-
-[E39] Kubernetes events and Argo CD history
-  ~/devops-lab4$ kubectl get events --field-selector involvedObject.name=gitops-demo --sort-by=.lastTimestamp | tail -n 8
-  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{range .status.history[*]}{.id}{"  "}{.revision}{"  "}{.deployedAt}{"\n"}{end}'
-
-Q5 - SECURE SECRET MANAGEMENT
------------------------------
-
-[E41] Jenkins credential
-  Jenkins REST API: created a Secret text credential with ID lab4-api-key (random demo value, not recorded)
-
-[E42] Add the secret stage to the pipeline
-  ~/devops-lab4$ git diff -U0 Jenkinsfile | tail -n 13
-  ~/devops-lab4$ git commit -q -am "Add Secure Secret Management stage using a Jenkins credential"
-  ~/devops-lab4$ git push
-  ~/devops-lab4$ date
-
-[E42] Add the secret stage to the pipeline
-  Editor: added the Secure Secret Management stage to the Jenkinsfile
-
-[E45] Create a Kubernetes Secret
-  ~/devops-lab4$ kubectl get nodes
-  ~/devops-lab4$ kubectl create secret generic lab4-app-secret --from-literal=API_KEY="$(openssl rand -hex 16)"
-  ~/devops-lab4$ kubectl describe secret lab4-app-secret
-  ~/devops-lab4$ cat secrets/secret-demo-pod.yaml
-
-[E46] Secret injected into a Pod
-  ~/devops-lab4$ kubectl apply -f secrets/secret-demo-pod.yaml
-  ~/devops-lab4$ kubectl wait --for=condition=Ready pod/lab4-secret-demo --timeout=180s
-  ~/devops-lab4$ kubectl logs lab4-secret-demo
-  ~/devops-lab4$ kubectl get pod lab4-secret-demo
-  ~/devops-lab4$ kubectl exec lab4-secret-demo -- sh -c 'echo "API_KEY length inside the container: ${#API_KEY}"'
-
-Q6 - DISASTER RECOVERY AND FAILOVER
------------------------------------
-
-[E47] Recovery targets defined first
+[E01] Recovery targets defined first
   ~/devops-lab4$ cat disaster-recovery/TARGETS.md
   ~/devops-lab4$ git log --oneline -n 1 -- disaster-recovery/TARGETS.md
 
-[E48] Persistent volume and original data
+[E02] Persistent volume and original data
   ~/devops-lab4$ kubectl apply -f disaster-recovery/pvc.yaml -f disaster-recovery/pod.yaml
   ~/devops-lab4$ kubectl wait --for=condition=Ready pod/lab4-dr-pod --timeout=180s
   ~/devops-lab4$ kubectl get pvc lab4-dr-pvc
@@ -242,13 +27,13 @@ Q6 - DISASTER RECOVERY AND FAILOVER
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- sha256sum /data/record.txt
 
-[E49] Backup and checksum
+[E03] Backup and checksum
   ~/devops-lab4$ mkdir -p disaster-recovery/backups
   ~/devops-lab4$ kubectl cp lab4-dr-pod:/data/record.txt disaster-recovery/backups/record.txt
   ~/devops-lab4$ cat disaster-recovery/backups/record.txt
   ~/devops-lab4$ sha256sum disaster-recovery/backups/record.txt
 
-[E50] Delete and timed restore
+[E04] Delete and timed restore
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- rm /data/record.txt
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- ls -la /data
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
@@ -256,50 +41,305 @@ Q6 - DISASTER RECOVERY AND FAILOVER
   ~/devops-lab4$ scripts/restore-data.sh
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
 
-[E51] Data survives Pod recreation
+[E05] Data survives Pod recreation
   ~/devops-lab4$ kubectl delete pod lab4-dr-pod --wait=true
   ~/devops-lab4$ kubectl apply -f disaster-recovery/pod.yaml
   ~/devops-lab4$ kubectl wait --for=condition=Ready pod/lab4-dr-pod --timeout=180s
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- cat /data/record.txt
   ~/devops-lab4$ kubectl exec lab4-dr-pod -- sha256sum /data/record.txt
 
-[E52] Failover test: starting state and script
+[E06] Failover test: starting state and script
   ~/devops-lab4$ docker compose -f bluegreen/compose.yaml ps --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
   ~/devops-lab4$ curl -s http://localhost:8086/
   ~/devops-lab4$ cat scripts/failover-test.sh
 
-[E53] Failover test run
+[E07] Failover test run
   ~/devops-lab4$ scripts/failover-test.sh /tmp/failover-stream.log 5
 
-[E54] Request stream during the failover
+[E08] Request stream during the failover
   ~/devops-lab4$ sed -n '8,40p' /tmp/failover-stream.log
 
-[E55] Green serves all traffic
+[E09] Green serves all traffic
   ~/devops-lab4$ docker compose -f bluegreen/compose.yaml ps -a --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
   ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf | head -n 3
   ~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
 
-[E56] Blue repaired as standby
+[E10] Blue repaired as standby
   ~/devops-lab4$ docker compose -f bluegreen/compose.yaml up -d blue
   ~/devops-lab4$ docker compose -f bluegreen/compose.yaml ps --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
   ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T blue python -c "import urllib.request; print('blue :', urllib.request.urlopen('http://localhost:5004/health').read().decode().strip())"
   ~/devops-lab4$ curl -s http://localhost:8086/
 
-Q7 - REPORT AND REPOSITORY
+Q2 - AUTOMATED TESTING AND DEPLOYMENT GATES
+-------------------------------------------
+
+[E11] Local tests pass
+  ~/devops-lab2$ cd ~/devops-lab4
+  ~/devops-lab4$ ls
+  ~/devops-lab4$ python3 -m venv .venv
+  ~/devops-lab4$ .venv/bin/python -m pip install -q -r requirements.txt
+  ~/devops-lab4$ .venv/bin/python -m pytest -v
+
+[E11] Local tests pass
+  Editor: prepared the project files in ~/devops-lab4 (application, tests, Jenkinsfile, compose files, manifests, scripts)
+
+[E12] Create the GitHub repository and push
+  ~/devops-lab4$ git init
+  ~/devops-lab4$ git add -A
+  ~/devops-lab4$ git commit -q -m "Initial Lab 4 project: application, tests, pipeline and deployment files"
+  ~/devops-lab4$ gh repo create devops-lab4 --public --source=. --remote=origin --push
+  ~/devops-lab4$ git log --oneline
+  ~/devops-lab4$ git remote -v
+
+[E13] Build #1 console - start
+  Jenkins REST API (signed in as the Jenkins user aditya; credentials not recorded):
+    curl -X POST 'http://localhost:8080/createItem?name=devops-lab4' \
+         -H 'Content-Type: application/xml' --data-binary @jenkins/job-config.xml
+    curl -X POST http://localhost:8080/job/devops-lab4/build      # build #1, same as "Build Now"
+
+[E16] Commit a deliberately failing test
+  ~/devops-lab4$ git diff -U0 tests/test_unit.py | tail -n 3
+  ~/devops-lab4$ git commit -q -am "Introduce a deliberately failing assertion to test the deployment gate"
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ date
+
+[E16] Commit a deliberately failing test
+  Editor: changed the assertion in tests/test_unit.py from 5 to 999
+
+[E20] Restore the correct assertion
+  ~/devops-lab4$ git diff -U0 tests/test_unit.py | tail -n 3
+  ~/devops-lab4$ git commit -q -am "Restore the correct assertion"
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ date
+
+[E20] Restore the correct assertion
+  Editor: changed the assertion in tests/test_unit.py back to 5
+
+Q3 - BLUE-GREEN DEPLOYMENT
 --------------------------
 
-[E57] Commit and push the lab work
+[E23] Start Blue, Green and nginx
+  ~/devops-lab4$ cat bluegreen/conf.d/app.conf
+  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml up -d --build --quiet-pull
+  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml ps
+  ~/devops-lab4$ curl -s http://localhost:8086/
+
+[E24] Both versions are running
+  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T blue python -c "import urllib.request; print('blue :', urllib.request.urlopen('http://localhost:5004/').read().decode().strip())"
+  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T green python -c "import urllib.request; print('green:', urllib.request.urlopen('http://localhost:5004/').read().decode().strip())"
+  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T green python -c "import urllib.request; print('green health:', urllib.request.urlopen('http://localhost:5004/health').read().decode().strip())"
+  ~/devops-lab4$ curl -s http://localhost:8086/
+
+[E25] First switch attempt did not take effect
+  ~/devops-lab4$ cat /tmp/switch-to-green.log
+  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
+  ~/devops-lab4$ curl -s http://localhost:8086/
+  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
+
+[E26] Diagnosis: the background job was stopped
+  ~/devops-lab4$ jobs -l
+  ~/devops-lab4$ cat /tmp/switch-to-green.log | wc -c
+
+[E27] Switch to Green under load
+  ~/devops-lab4$ git diff -U0 scripts/switch-bluegreen.sh | tail -n 4
+  ~/devops-lab4$ curl -s http://localhost:8086/
+  ~/devops-lab4$ (sleep 3; scripts/switch-bluegreen.sh green > /tmp/switch-to-green.log 2>&1) &
+  ~/devops-lab4$ scripts/request-stream.sh http://localhost:8086/ 28 0.25
+
+[E28] Green is live
+  ~/devops-lab4$ cat /tmp/switch-to-green.log
+  ~/devops-lab4$ docker compose -f bluegreen/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
+  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
+
+[E29] Version v2 in the browser
+  Browser: opened http://localhost:8086/
+
+[E30] Rollback to Blue under load
+  ~/devops-lab4$ (sleep 3; scripts/switch-bluegreen.sh blue > /tmp/switch-to-blue.log 2>&1) &
+  ~/devops-lab4$ scripts/request-stream.sh http://localhost:8086/ 28 0.25
+
+[E31] Blue is live again
+  ~/devops-lab4$ cat /tmp/switch-to-blue.log
+  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8086/ 50
+  ~/devops-lab4$ git add scripts/switch-bluegreen.sh
+  ~/devops-lab4$ git commit -q -m "Fix switch script: do not read from the terminal when run in the background"
+
+Q4 - GITOPS USING ARGO CD
+-------------------------
+
+[E32] Install Argo CD
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ kubectl create namespace argocd
+  ~/devops-lab4$ kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml | tail -n 6
+  ~/devops-lab4$ kubectl wait --for=condition=Available deployment --all -n argocd --timeout=900s
+  ~/devops-lab4$ kubectl get pods -n argocd
+
+[E33] Expose the Argo CD UI
+  ~/devops-lab4$ kubectl port-forward svc/argocd-server -n argocd 8443:443 > /tmp/argocd-port-forward.log 2>&1 &
+  ~/devops-lab4$ curl -k -s -o /dev/null -w 'Argo CD UI: HTTP %{http_code}\n' https://localhost:8443/
+  ~/devops-lab4$ kubectl get applications -n argocd
+
+[E34] Argo CD login page
+  Browser: opened https://localhost:8443 and signed in as admin (initial password read from the
+           argocd-initial-admin-secret; value not recorded)
+
+[E36] Create the Argo CD application
+  ~/devops-lab4$ cat gitops/application.yaml
+  ~/devops-lab4$ cat gitops/manifests/deployment.yaml | head -n 8
+  ~/devops-lab4$ kubectl apply -f gitops/application.yaml
+  ~/devops-lab4$ until [ "$(kubectl get application gitops-demo -n argocd -o jsonpath='{.status.health.status}')" = "Healthy" ]; do sleep 3; done
+
+[E37] Argo CD deployed two replicas
+  ~/devops-lab4$ kubectl get deployment gitops-demo
+  ~/devops-lab4$ kubectl get pods -l app=gitops-demo
+  ~/devops-lab4$ kubectl get service gitops-demo
+  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.spec.syncPolicy}'; echo
+
+[E40] Change the desired state in Git
+  ~/devops-lab4$ kubectl get application gitops-demo -n argocd
+  ~/devops-lab4$ git diff -U0 gitops/manifests/deployment.yaml | tail -n 3
+  ~/devops-lab4$ git commit -q -am "Scale gitops-demo to 3 replicas (desired state in Git)"
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ date
+  ~/devops-lab4$ kubectl get deployment gitops-demo
+
+[E40] Change the desired state in Git
+  Editor: changed replicas from 2 to 3 in gitops/manifests/deployment.yaml
+
+[E41] Argo CD applies the commit
+  ~/devops-lab4$ kubectl wait --for=jsonpath='{.status.readyReplicas}'=3 deployment/gitops-demo --timeout=420sdeployment.apps/gitops-demo condition met
+  ~/devops-lab4$ date
+  ~/devops-lab4$ kubectl get deployment gitops-demo
+  ~/devops-lab4$ kubectl get pods -l app=gitops-demo
+  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.status.sync.status} {.status.health.status} revision={.status.sync.revision}'; echo
+  ~/devops-lab4$ git rev-parse HEAD
+
+[E43] Self-heal after a manual change
+  ~/devops-lab4$ kubectl get deployment gitops-demo --no-headers
+  ~/devops-lab4$ kubectl scale deployment gitops-demo --replicas=1; for i in 1 2 3 4 5 6 7 8 9 10; do echo "$(date +%T)  $(kubectl get deployment gitops-demo --no-headers)"; sleep 2; done
+  ~/devops-lab4$ kubectl get pods -l app=gitops-demo
+  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{.status.sync.status} {.status.health.status}'; echo
+  ~/devops-lab4$ grep -n replicas gitops/manifests/deployment.yaml
+
+[E44] Kubernetes events and Argo CD history
+  ~/devops-lab4$ kubectl get events --field-selector involvedObject.name=gitops-demo --sort-by=.lastTimestamp | tail -n 8
+  ~/devops-lab4$ kubectl get application gitops-demo -n argocd -o jsonpath='{range .status.history[*]}{.id}{"  "}{.revision}{"  "}{.deployedAt}{"\n"}{end}'
+
+Q5 - ADVANCED DEPLOYMENT STRATEGIES REPORT
+------------------------------------------
+
+[E46] Commit and push the lab work
   ~/devops-lab4$ git status --short
   ~/devops-lab4$ git add -A
   ~/devops-lab4$ git commit -q -m "Record failover state (traffic on green) and add recovery manifests"
   ~/devops-lab4$ git push
   ~/devops-lab4$ git log --oneline -n 6
 
-[E59] Commit and push the documentation
+[E48] Commit and push the first version of the documentation
   ~/devops-lab4$ git add -A
   ~/devops-lab4$ git status --short | wc -l
   ~/devops-lab4$ git commit -q -m "Add Lab 4 report, evidence gallery and command record"
   ~/devops-lab4$ git push
   ~/devops-lab4$ git log --oneline -n 4
+
+Q6 - SECURE SECRET MANAGEMENT
+-----------------------------
+
+[E51] Jenkins credential
+  Jenkins REST API: created a Secret text credential with ID lab4-api-key (random demo value, not recorded)
+
+[E52] Add the secret stage to the pipeline
+  ~/devops-lab4$ git diff -U0 Jenkinsfile | tail -n 13
+  ~/devops-lab4$ git commit -q -am "Add Secure Secret Management stage using a Jenkins credential"
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ date
+
+[E52] Add the secret stage to the pipeline
+  Editor: added the Secure Secret Management stage to the Jenkinsfile
+
+[E55] Create a Kubernetes Secret
+  ~/devops-lab4$ kubectl get nodes
+  ~/devops-lab4$ kubectl create secret generic lab4-app-secret --from-literal=API_KEY="$(openssl rand -hex 16)"
+  ~/devops-lab4$ kubectl describe secret lab4-app-secret
+  ~/devops-lab4$ cat secrets/secret-demo-pod.yaml
+
+[E56] Secret injected into a Pod
+  ~/devops-lab4$ kubectl apply -f secrets/secret-demo-pod.yaml
+  ~/devops-lab4$ kubectl wait --for=condition=Ready pod/lab4-secret-demo --timeout=180s
+  ~/devops-lab4$ kubectl logs lab4-secret-demo
+  ~/devops-lab4$ kubectl get pod lab4-secret-demo
+  ~/devops-lab4$ kubectl exec lab4-secret-demo -- sh -c 'echo "API_KEY length inside the container: ${#API_KEY}"'
+
+Q7 - CANARY DEPLOYMENT, ROLLOUT METRICS AND ROLLBACK TRIGGERS
+-------------------------------------------------------------
+
+[E57] Start the canary stack
+  ~/devops-lab4$ git add -A
+  ~/devops-lab4$ git commit -q -m "Add canary, failover and restore scripts and recovery targets"
+  ~/devops-lab4$ cat canary/conf.d/app.conf
+  ~/devops-lab4$ docker compose -f canary/compose.yaml up -d --build --quiet-pull
+  ~/devops-lab4$ docker compose -f canary/compose.yaml ps
+  ~/devops-lab4$ curl -s http://localhost:8087/
+
+[E58] 90 / 10 measured
+  ~/devops-lab4$ cat scripts/count-versions.sh
+  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
+
+[E59] 70 / 30 measured
+  ~/devops-lab4$ cat scripts/set-canary-weights.sh
+  ~/devops-lab4$ scripts/set-canary-weights.sh 7 3
+  ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
+  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
+
+[E60] Rollback: all traffic to v1
+  ~/devops-lab4$ scripts/set-canary-weights.sh 1 0
+  ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf
+  ~/devops-lab4$ scripts/count-versions.sh http://localhost:8087/ 100
+
+[E61] Stop the canary stack
+  ~/devops-lab4$ docker compose -f canary/compose.yaml down
+  ~/devops-lab4$ git add -A
+  ~/devops-lab4$ git commit -q -m "Canary rolled back: all traffic to v1"
+  ~/devops-lab4$ git log --oneline -n 3
+
+[E62] Rollback triggers defined first
+  ~/devops-lab3$ cd ~/devops-lab4
+  ~/devops-lab4$ git diff -U0 app.py | tail -n 7
+  ~/devops-lab4$ .venv/bin/python -m pytest -q
+  ~/devops-lab4$ cat canary/ROLLBACK-TRIGGERS.md
+  ~/devops-lab4$ git add -A
+  ~/devops-lab4$ git commit -q -m "Define canary rollback triggers; add canary check script and a fault switch for testing"
+  ~/devops-lab4$ git log --oneline -n 1 -- canary/ROLLBACK-TRIGGERS.md
+
+[E62] Rollback triggers defined first
+  Editor: added the SIMULATE_FAILURE switch to app.py, canary/ROLLBACK-TRIGGERS.md and scripts/canary-check.sh
+
+[E63] Canary check script
+  ~/devops-lab4$ cat scripts/canary-check.sh
+
+[E64] Healthy canary at 10%
+  ~/devops-lab4$ docker compose -f canary/compose.yaml up -d --build --quiet-pull
+  ~/devops-lab4$ scripts/set-canary-weights.sh 9 1
+  ~/devops-lab4$ scripts/canary-check.sh
+
+[E65] Healthy canary at 30%
+  ~/devops-lab4$ scripts/set-canary-weights.sh 7 3
+  ~/devops-lab4$ scripts/canary-check.sh
+
+[E66] Faulty release: the trigger rolls back
+  ~/devops-lab4$ GREEN_SIMULATE_FAILURE=true docker compose -f canary/compose.yaml up -d green
+  ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T green printenv SIMULATE_FAILURE
+  ~/devops-lab4$ scripts/set-canary-weights.sh 9 1
+  ~/devops-lab4$ scripts/canary-check.sh; echo "exit code: $?"
+
+[E67] After the automatic rollback
+  ~/devops-lab4$ docker compose -f canary/compose.yaml exec -T nginx cat /etc/nginx/conf.d/app.conf | head -n 3
+  ~/devops-lab4$ scripts/canary-check.sh
+
+[E68] Stop the canary stack and push
+  ~/devops-lab4$ docker compose -f canary/compose.yaml down
+  ~/devops-lab4$ git status --short
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ date
 
 Repository: https://github.com/Adityaporwal18/devops-lab4

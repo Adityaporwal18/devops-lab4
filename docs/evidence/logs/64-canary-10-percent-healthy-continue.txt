@@ -1,0 +1,54 @@
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml up -d --build --quiet-pull
+[+] Building 3.6s (15/15) FINISHED                                                                                             
+ => [internal] load local bake definitions                                                                                0.0s
+ => => reading from stdin 897B                                                                                            0.0s
+ => [green internal] load build definition from Dockerfile                                                                0.0s
+ => => transferring dockerfile: 200B                                                                                      0.0s
+ => [blue internal] load metadata for docker.io/library/python:3.14-slim                                                  2.2s
+ => [auth] library/python:pull token for registry-1.docker.io                                                             0.0s
+ => [green internal] load .dockerignore                                                                                   0.1s
+ => => transferring context: 122B                                                                                         0.1s
+ => [blue internal] load build context                                                                                    0.0s
+ => => transferring context: 702B                                                                                         0.0s
+ => [green 1/5] FROM docker.io/library/python:3.14-slim@sha256:22eafb370920ad8b429e0aec3fff433e0669968519f5d60469d83729c  0.0s
+ => => resolve docker.io/library/python:3.14-slim@sha256:22eafb370920ad8b429e0aec3fff433e0669968519f5d60469d83729c138b28  0.0s
+ => CACHED [blue 2/5] WORKDIR /app                                                                                        0.0s
+ => CACHED [blue 3/5] COPY requirements.txt .                                                                             0.0s
+ => CACHED [blue 4/5] RUN pip install --no-cache-dir -r requirements.txt                                                  0.0s
+ => [blue 5/5] COPY app.py .                                                                                              0.1s
+ => [blue] exporting to image                                                                                             0.3s
+ => => exporting layers                                                                                                   0.1s
+ => => exporting manifest sha256:1bd364eddd7cf7f73fa3bc3fac2d683b025a5b8d3ab5c0a88e01b0f4d38fee97                         0.0s
+ => => exporting config sha256:960d6849621dfe2a7536e4ede30e4893de3c0025e949aa8d7190771702ceb2b8                           0.0s
+ => => exporting attestation manifest sha256:a32dfc52ea77c48b8f982681508e759442c10fad3093d74be78a379c9a441e9d             0.0s
+ => => exporting manifest list sha256:5c143f60c385fce1a6b3a05026cc8947d576f895ab08b24520d89ce3b9f32e5c                    0.0s
+ => => naming to docker.io/library/canary-blue:latest                                                                     0.0s
+ => => unpacking to docker.io/library/canary-blue:latest                                                                  0.1s
+ => [green] exporting to image                                                                                            0.3s
+ => => exporting layers                                                                                                   0.1s
+ => => exporting manifest sha256:36775148a93e25b259b623242e82863ece08e3364c700c59974fd7651b69dcc0                         0.0s
+ => => exporting config sha256:3ec4c31f6305a12191729aaaa8fcfbc7844cb999a8d53634d66a091d9e17f64e                           0.0s
+ => => exporting attestation manifest sha256:f90ba15fb022d522c8f95c63d1e7eb934964e9a13961036ef37ce8ee4e597ba0             0.0s
+ => => exporting manifest list sha256:249d20a89671a0a309d479ead4fef9fb8bffabc418be7b56ad94ca9e50c8a13a                    0.0s
+ => => naming to docker.io/library/canary-green:latest                                                                    0.0s
+ => => unpacking to docker.io/library/canary-green:latest                                                                 0.1s
+ => [green] resolving provenance for metadata file                                                                        0.0s
+ => [blue] resolving provenance for metadata file                                                                         0.0s
+[+] up 6/6
+ ✔ Image canary-blue        Built                                                                                          3.8s
+ ✔ Image canary-green       Built                                                                                          3.8s
+ ✔ Network canary_default   Created                                                                                        0.2s
+ ✔ Container canary-green-1 Started                                                                                        0.9s
+ ✔ Container canary-blue-1  Started                                                                                        1.1s
+ ✔ Container canary-nginx-1 Started                                                                                        1.4s
+aditya@lima-devops:~/devops-lab4$ scripts/set-canary-weights.sh 9 1
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 10:21:32 [notice] 29#29: signal process started
+canary weights now: blue(v1)=9 green(v2)=1
+aditya@lima-devops:~/devops-lab4$ scripts/canary-check.sh
+requests: 100 | answered by v1: 90 | answered by v2: 10
+HTTP 200: 100 | failed: 0 | error rate: 0.0% (trigger: more than 1%)
+average response time: 2.4 ms (trigger: more than 200 ms)
+DECISION: CONTINUE - no rollback trigger breached
+aditya@lima-devops:~/devops-lab4$ 

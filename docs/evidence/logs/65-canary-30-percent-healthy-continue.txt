@@ -1,0 +1,11 @@
+aditya@lima-devops:~/devops-lab4$ scripts/set-canary-weights.sh 7 3
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 10:21:42 [notice] 46#46: signal process started
+canary weights now: blue(v1)=7 green(v2)=3
+aditya@lima-devops:~/devops-lab4$ scripts/canary-check.sh
+requests: 100 | answered by v1: 70 | answered by v2: 30
+HTTP 200: 100 | failed: 0 | error rate: 0.0% (trigger: more than 1%)
+average response time: 2.4 ms (trigger: more than 200 ms)
+DECISION: CONTINUE - no rollback trigger breached
+aditya@lima-devops:~/devops-lab4$ 

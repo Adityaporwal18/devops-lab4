@@ -1,0 +1,31 @@
+aditya@lima-devops:~/devops-lab3$ cd ~/devops-lab4
+aditya@lima-devops:~/devops-lab4$ git diff -U0 app.py | tail -n 7
+@@ -10,0 +11,6 @@ def home():
++    if os.getenv("SIMULATE_FAILURE", "false").lower() == "true":
++        return jsonify(
++            application="DevOps Lab 4",
++            version=os.getenv("APP_VERSION", "v1"),
++            status="error"
++        ), 500
+aditya@lima-devops:~/devops-lab4$ .venv/bin/python -m pytest -q
+......                                                                                                                  [100%]
+6 passed in 0.31s
+aditya@lima-devops:~/devops-lab4$ cat canary/ROLLBACK-TRIGGERS.md
+# Canary rollback triggers
+
+These triggers were written down before the trigger test was run. They are checked by
+`scripts/canary-check.sh` over 100 requests to the public endpoint.
+
+| Metric | Rollback trigger | Why |
+|---|---|---|
+| Error rate (responses that are not HTTP 200) | more than 1% | A healthy release returned 0 errors in every earlier measurement |
+| Average response time | more than 200 ms | Healthy measurements were below 10 ms, so 200 ms means something is badly wrong |
+
+If either trigger is breached, the script sets the weights to v1 = 1, v2 = 0 and reloads nginx,
+so all traffic returns to the stable version. If no trigger is breached, the rollout may continue
+to the next step (10% -> 30% -> ...).
+aditya@lima-devops:~/devops-lab4$ git add -A
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Define canary rollback triggers; add canary check script and a fault switch for testing"
+aditya@lima-devops:~/devops-lab4$ git log --oneline -n 1 -- canary/ROLLBACK-TRIGGERS.md
+1216dfb (HEAD -> main) Define canary rollback triggers; add canary check script and a fault switch for testing
+aditya@lima-devops:~/devops-lab4$ 

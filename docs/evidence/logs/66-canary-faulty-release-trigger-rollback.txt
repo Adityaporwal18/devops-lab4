@@ -1,0 +1,21 @@
+aditya@lima-devops:~/devops-lab4$ GREEN_SIMULATE_FAILURE=true docker compose -f canary/compose.yaml up -d green
+[+] up 1/1
+ ✔ Container canary-green-1 Started                                                                                       10.9s
+aditya@lima-devops:~/devops-lab4$ docker compose -f canary/compose.yaml exec -T green printenv SIMULATE_FAILURE
+true
+aditya@lima-devops:~/devops-lab4$ scripts/set-canary-weights.sh 9 1
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 10:22:19 [notice] 62#62: signal process started
+canary weights now: blue(v1)=9 green(v2)=1
+aditya@lima-devops:~/devops-lab4$ scripts/canary-check.sh; echo "exit code: $?"
+requests: 100 | answered by v1: 90 | answered by v2: 10
+HTTP 200: 90 | failed: 10 | error rate: 10.0% (trigger: more than 1%)
+average response time: 2.0 ms (trigger: more than 200 ms)
+DECISION: ROLLBACK - a rollback trigger was breached
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+2026/11/25 10:22:21 [notice] 77#77: signal process started
+canary weights now: blue(v1)=1 green(v2)=0
+exit code: 1
+aditya@lima-devops:~/devops-lab4$ 
