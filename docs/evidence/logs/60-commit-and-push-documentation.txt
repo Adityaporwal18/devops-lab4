@@ -1,0 +1,20 @@
+aditya@lima-devops:~/devops-lab4$ git add -A
+aditya@lima-devops:~/devops-lab4$ git status --short | wc -l
+108
+aditya@lima-devops:~/devops-lab4$ git commit -q -m "Add Lab 4 report, evidence gallery and command record"
+aditya@lima-devops:~/devops-lab4$ git push
+Enumerating objects: 116, done.
+Counting objects: 100% (116/116), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (114/114), done.
+Writing objects: 100% (114/114), 13.95 MiB | 1.78 MiB/s, done.
+Total 114 (delta 13), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (13/13), completed with 1 local object.
+To https://github.com/Adityaporwal18/devops-lab4.git
+   51515d9..b07ecd6  main -> main
+aditya@lima-devops:~/devops-lab4$ git log --oneline -n 4
+b07ecd6 (HEAD -> main, origin/main) Add Lab 4 report, evidence gallery and command record
+51515d9 Record failover state (traffic on green) and add recovery manifests
+de1a448 Scale gitops-demo to 3 replicas (desired state in Git)
+c209fb0 Add Secure Secret Management stage using a Jenkins credential
+aditya@lima-devops:~/devops-lab4$ 

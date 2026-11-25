@@ -295,4 +295,11 @@ Q7 - REPORT AND REPOSITORY
   ~/devops-lab4$ git push
   ~/devops-lab4$ git log --oneline -n 6
 
+[E59] Commit and push the documentation
+  ~/devops-lab4$ git add -A
+  ~/devops-lab4$ git status --short | wc -l
+  ~/devops-lab4$ git commit -q -m "Add Lab 4 report, evidence gallery and command record"
+  ~/devops-lab4$ git push
+  ~/devops-lab4$ git log --oneline -n 4
+
 Repository: https://github.com/Adityaporwal18/devops-lab4

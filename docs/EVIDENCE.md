@@ -16,7 +16,7 @@ Evidence is grouped by lab question. The number at the start of each file name g
 | [Q4 - GitOps using Argo CD](#q4---gitops-using-argo-cd) | E27-E40 |
 | [Q5 - Secure secret management](#q5---secure-secret-management) | E41-E46 |
 | [Q6 - Disaster recovery and failover](#q6---disaster-recovery-and-failover) | E47-E56 |
-| [Q7 - Report and repository](#q7---report-and-repository) | E57-E58 |
+| [Q7 - Report and repository](#q7---report-and-repository) | E57-E60 |
 
 ## Q1 - Automated testing and deployment gates
 
@@ -469,3 +469,17 @@ Source: [Terminal log](evidence/logs/58-commit-and-push-lab-work.txt)
 Job page of `devops-lab4` with builds #1 to #6. Only #2, the deliberate failure, is red; every other push was tested and approved automatically.
 
 ![E58 Jenkins build history](evidence/screenshots/59-jenkins-build-history-all-builds.png)
+
+### E59 - Commit and push the documentation
+
+The report, evidence gallery, command record and screenshots are committed and pushed to GitHub.
+
+![E59 Commit and push the documentation](evidence/screenshots/60-commit-and-push-documentation.png)
+
+Source: [Terminal log](evidence/logs/60-commit-and-push-documentation.txt)
+
+### E60 - Final repository on GitHub
+
+The repository `Adityaporwal18/devops-lab4` on GitHub with the application, tests, pipeline, deployment files, report and the `docs` folder.
+
+![E60 Final repository on GitHub](evidence/screenshots/61-github-final-repository.png)
